@@ -1,0 +1,9 @@
+ENV= LOG_LEVEL='debug'
+ENV_HTTP_LISTEN_ADDR= HTTP_LISTEN_ADDR='0.0.0.0:8090'
+ENV_GRPC_LISTEN_ADDR= GRPC_LISTEN_ADDR='0.0.0.0:7090'
+# DB_URL= "root:123456@tcp(127.0.0.1:3306)/webinar?parseTime=true&multiStatements=true"
+ENV_REDIS_URL= REDIS_URL= "redis://127.0.0.1:6379"
+# ACCOUNT_ACCESS_ADDR= 0.0.0.0:17001
+
+run:
+	$(ENV) $(ENV_HTTP_LISTEN_ADDR) $(ENV_GRPC_LISTEN_ADDR) $(REDIS_URL) go run app/sdmht/main.go

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package conn_pb;
+option go_package = "sdmht/sdmht_conn/api/grpc/conn_pb";
+
+import "lib/protobuf/error.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service Conn {
+  rpc DispatchEventToClient(ClientEventReq) returns (DispatchEventToClientReply);
+  rpc KickClient(KickClientReq) returns(CommonReply);
+}
+
+message KickClientReq {
+  uint64 user_id = 1;
+}
+
+message ClientEventReq {
+  uint64 user_id = 1;
+  Event event = 2;
+}
+
+message Event {
+  string type = 1; // event_type
+  string content = 2; // json
+  google.protobuf.Timestamp at_time = 3;
+}
+
+message DispatchEventToClientReply {
+  ClientReply client_reply = 1;
+  lib.Error err = 2;
+}
+
+message ClientReply {
+  uint64 user_id = 1;
+  bool ok = 2;
+  string err = 3;
+}
+
+message CommonReply {
+  lib.Error err = 1;
+}

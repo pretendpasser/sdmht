@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package account_pb;
+option go_package = "pantheon/account/api/grpc/pb";
+
+import "lib/protobuf/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service Account {
+    rpc Authenticate(AuthenticateReq) returns (AuthenticateRes);
+}
+
+message ErrorReply {
+    lib.Error err = 1;
+}
+
+message account {
+    uint64 id                               = 1;
+    string user_name                        = 2;
+    google.protobuf.Timestamp created_at    = 3;
+    google.protobuf.Timestamp last_login_at = 4;
+}
+
+message AuthenticateReq {
+    string token = 1;
+}
+
+message AuthenticateRes {
+    lib.Error err   = 1;
+    account account = 2;
+}

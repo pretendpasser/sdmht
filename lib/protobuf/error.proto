@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package lib;
+option go_package = "sdmht/lib/protobuf/types/error";
+
+message Error {
+    int32 errno   = 1;
+    string errmsg = 2;
+}

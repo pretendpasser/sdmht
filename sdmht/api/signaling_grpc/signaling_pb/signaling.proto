@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package signaling_pb;
+option go_package = "sdmht/sdmht/api/signaling_grpc/signaling";
+
+// import "google/protobuf/timestamp.proto";
+import "lib/protobuf/error.proto";
+
+service Signaling {
+    rpc NewMatch(NewMatchReq) returns (NewMatchReply);
+    rpc KeepAlive(KeepAliveReq) returns (CommonReply);
+    rpc Offline(LogoutReq) returns (CommonReply);
+}
+
+message Scene {
+    repeated int32 squares = 1;
+    repeated int32 hand_card = 2;
+    repeated int32 card_library = 3;
+    int32 draw_card_countdown = 4;
+}
+
+message Player {
+    uint64 id = 1;
+    Scene scene = 2;
+}
+
+message NewMatchReq {
+    uint64 operator = 1;
+    uint64 card_config = 2;
+}
+
+message NewMatchReply {
+    lib.Error err = 1;
+    Player player = 2;
+}
+
+message CommonReply {
+    lib.Error err = 1;
+}
+
+message KeepAliveReq {
+    uint64 operator = 1;
+}
+
+message LogoutReq {
+    uint64 operator = 1;
+    string reason = 2;
+}
