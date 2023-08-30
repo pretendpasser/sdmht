@@ -13,9 +13,9 @@ type Scene struct {
 	// 0:迷雾;+x为回到迷雾的倒计时;-x为不可开启的迷雾持续时间
 	Squares [16]int32 `json:"square"`
 	// 手牌 存牌的编号
-	HandCard [10]int32
+	HandCard [10]int64
 	// 牌库 存牌的编号
-	CardLibrary [20]int32
+	CardLibrary [20]int64
 	// 抽卡倒计时
 	DrawCardCountDown int32
 }

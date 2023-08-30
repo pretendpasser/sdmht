@@ -15,11 +15,13 @@ CREATE TABLE IF NOT EXISTS `god` (
   `nocure` tinyint NOT NULL,
 
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB COMMENT='table of gos';
+) ENGINE=InnoDB COMMENT='table of god';
 
 
 INSERT INTO `god` (`id`, `name`, `rarity`,`affiliate`, `health`,`attack`,`move`,`defend`, `nomove`,`noattack`,`nocure`)VALUES 
-(10,  "奥丁"            ,0,1,   50,3,2,15,    0,0,0),
+(10,  "奥丁-1"            ,0,1,   50,3,2,15,    0,0,0),
+(11,  "奥丁-2"            ,0,1,   50,3,2,15,    0,0,0),
+(12,  "奥丁-3"            ,0,1,   50,3,2,15,    0,0,0),
 (20,  "天照"            ,0,2,   50,3,2,15,    0,0,0),
 (30,  "伊米尔"          ,0,3,   50,3,2,15,    0,0,0),
 (40,  "道德天尊"        ,0,4,   50,3,2,15,    0,0,0),

@@ -46,25 +46,6 @@ func NewSignalingService(idGenerator seq.IDGenerator,
 	}
 }
 
-func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRsp, error) {
-	res := &entity.NewMatchRsp{}
-	res.Player = &entity.Player{
-		ID:    req.Operator,
-		Scene: entity.NewScene(),
-	}
-	return res, nil
-}
-
-// func (s *signalingSvc) JoinMatch(ctx context.Context, req entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
-// 	res := &entity.JoinMatchRes{}
-// 	newMatchID, err := s.idGenerator.NextID()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	res.MatchID = newMatchID
-// 	return res, nil
-// }
-
 func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
 	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
 	slog.Infow("KeepAlive:Req", "params", req)
@@ -86,3 +67,22 @@ func (s *signalingSvc) Offline(ctx context.Context, req *entity.LogoutReq) error
 	return nil
 
 }
+
+func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRsp, error) {
+	res := &entity.NewMatchRsp{}
+	res.Player = &entity.Player{
+		ID:    req.Operator,
+		Scene: entity.NewScene(),
+	}
+	return res, nil
+}
+
+// func (s *signalingSvc) JoinMatch(ctx context.Context, req entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
+// 	res := &entity.JoinMatchRes{}
+// 	newMatchID, err := s.idGenerator.NextID()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	res.MatchID = newMatchID
+// 	return res, nil
+// }

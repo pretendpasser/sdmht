@@ -14,8 +14,8 @@ func fromPBScene(in *pb.Scene) (out *entity.Scene) {
 	}
 	out = &entity.Scene{
 		Squares:           [16]int32{},
-		HandCard:          [10]int32{},
-		CardLibrary:       [20]int32{},
+		HandCard:          [10]int64{},
+		CardLibrary:       [20]int64{},
 		DrawCardCountDown: in.DrawCardCountdown,
 	}
 	_ = copy(out.Squares[:], in.Squares)

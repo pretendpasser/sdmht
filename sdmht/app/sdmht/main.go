@@ -25,6 +25,8 @@ import (
 
 	"github.com/go-kit/kit/sd"
 	"github.com/go-redis/redis/v8"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
 )
 
@@ -33,13 +35,18 @@ type config struct {
 	LogDisableSampling bool
 	HttpAddr           string
 	GrpcAddr           string
-
 	// redis
+	RedisDBUrl        string
 	RedisMaxIdleTime  int // second
 	RedisMaxLifeTime  int
 	RedisMaxIdleConns int
 	RedisMaxOpenConns int
-	RedisDBUrl        string
+	// mysql
+	DBUrl               string
+	MysqlDBMaxIdleTime  int
+	MysqlDBMaxLifeTime  int
+	MysqlDBMaxIdleConns int
+	MysqlDBMaxOpenConns int
 }
 
 func main() {
@@ -55,6 +62,13 @@ func main() {
 		panic(err)
 	}
 
+	db, err := initMysqlDB(cfg.DBUrl, cfg.MysqlDBMaxIdleTime, cfg.MysqlDBMaxLifeTime,
+		cfg.MysqlDBMaxIdleConns, cfg.MysqlDBMaxOpenConns)
+	if err != nil {
+		log.S().Panic("err", err)
+	}
+	defer db.Close()
+
 	redisDB, err := initRedis(cfg.RedisDBUrl, cfg.RedisMaxIdleTime, cfg.RedisMaxLifeTime,
 		cfg.RedisMaxIdleConns, cfg.RedisMaxOpenConns)
 	if err != nil {
@@ -66,6 +80,10 @@ func main() {
 		idGenerator = seq.New()
 	)
 
+	var (
+		lineupRepo = repo.NewLineupRepo(db)
+	)
+
 	srvOpts := kitx.NewServerOptions(kitx.WithLogger(log.GetLogger()), kitx.WithRateLimit(nil), kitx.WithCircuitBreaker(0), kitx.WithMetrics(nil), kitx.WithZipkinTracer(nil))
 	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second), kitx.WithZipkinTracer(nil))
 
@@ -74,7 +92,8 @@ func main() {
 		instance := []string{connName}
 		return conncli.NewClient(sd.FixedInstancer(instance), cliOpts)
 	})
-	sdmhtSvc := sdmht_svc.NewService()
+
+	sdmhtSvc := sdmht_svc.NewService(lineupRepo)
 	accountSvc := accountcli.NewClient(sd.FixedInstancer([]string{utils.GetEnvDefault("ACCOUNT_ACCESS_ADDR", "account:7001")}), cliOpts)
 	signalingSvc := sdmht_svc.NewSignalingService(idGenerator, nil, accountSvc, connMgr)
 	grpcServer := signaling_grpc.NewGRPCServer(signalingSvc, srvOpts)
@@ -149,6 +168,33 @@ func parsesConfig(config *config) {
 		}
 	}
 
+	// mysql
+	config.DBUrl = utils.GetEnvDefault("DB_URL", "root:123456@tcp(c3_db:3306)/c3_sla?parseTime=true&multiStatements=true")
+	if dbMaxIdleTimeStr := utils.GetEnvDefault("MYSQL_DB_MAX_IDLE_TIME", ""); dbMaxIdleTimeStr != "" {
+		config.MysqlDBMaxIdleTime, err = strconv.Atoi(dbMaxIdleTimeStr)
+		if err != nil {
+			log.S().Panic("MYSQLDB_MAX_IDLE_TIME invalid", dbMaxIdleTimeStr)
+		}
+	}
+	if dbMaxLifeTimeStr := utils.GetEnvDefault("MYSQL_DB_MAX_LIFE_TIME", ""); dbMaxLifeTimeStr != "" {
+		config.MysqlDBMaxIdleConns, err = strconv.Atoi(dbMaxLifeTimeStr)
+		if err != nil {
+			log.S().Panic("MYSQLDB_MAX_IDLE_CONNS invalid", dbMaxLifeTimeStr)
+		}
+	}
+	if dbMaxIdleConnsStr := utils.GetEnvDefault("MYSQL_DB_MAX_IDLE_CONNS", ""); dbMaxIdleConnsStr != "" {
+		config.MysqlDBMaxIdleConns, err = strconv.Atoi(dbMaxIdleConnsStr)
+		if err != nil {
+			log.S().Panic("MYSQLDB_MAX_IDLE_CONNS invalid", dbMaxIdleConnsStr)
+		}
+	}
+	if dbMaxOpenConnsStr := utils.GetEnvDefault("MYSQL_DB_MAX_OPEN_CONNS", ""); dbMaxOpenConnsStr != "" {
+		config.MysqlDBMaxOpenConns, err = strconv.Atoi(dbMaxOpenConnsStr)
+		if err != nil {
+			log.S().Panic("MYSQLDB_MAX_OPEN_CONNS invalid", dbMaxOpenConnsStr)
+		}
+	}
+
 }
 
 func initRedis(redisUrl string, idleTimeout int, maxConnAge int, minIdelConns int, maxPoolSize int) (*redis.Client, error) {
@@ -171,4 +217,27 @@ func initRedis(redisUrl string, idleTimeout int, maxConnAge int, minIdelConns in
 	}
 
 	return redis.NewClient(opts), nil
+}
+
+func initMysqlDB(dbUrl string, dbMaxIdleTime int, dbMaxLifeTime int, dbMaxIdleConns int, dbMaxOpenConns int) (*sqlx.DB, error) {
+	db, err := sqlx.Open("mysql", dbUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	if dbMaxIdleTime != 0 {
+		db.DB.SetConnMaxIdleTime(time.Duration(dbMaxIdleTime) * time.Second)
+	}
+	if dbMaxLifeTime != 0 {
+		db.DB.SetConnMaxLifetime(time.Duration(dbMaxLifeTime) * time.Second)
+	}
+	if dbMaxIdleConns != 0 {
+		db.DB.SetMaxIdleConns(dbMaxIdleConns)
+	}
+
+	if dbMaxOpenConns != 0 {
+		db.DB.SetMaxOpenConns(dbMaxOpenConns)
+	}
+
+	return db, nil
 }

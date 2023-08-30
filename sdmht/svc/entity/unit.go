@@ -1,18 +1,22 @@
 package entity
 
+import (
+	"sdmht/lib/utils"
+)
+
 const (
 	// MainDeity       = 1 //主神
 	// AffiliatedDeity = 2 //附属神明
 	Derivative = 3 //衍生物
 
-	AffiliateOdin      = 1 // 奥丁势力
-	AffiliateAmaterasu = 2 // 天照势力
-	AffiliateYimir     = 3 // 伊米尔势力
-	AffiliateDaoDe     = 4 // 道德天尊势力
-	AffiliateAmaravati = 5 // 阿摩婆罗提势力
-	AffiliateRah       = 6 // 拉势力
-	AffiliateZeus      = 7 // 宙斯势力
-	AffiliateYuanshi   = 8 // 元始天尊势力
+	AffiliateAsgard       = 1 // 阿斯加德势力
+	AffiliateTakamagahara = 2 // 高天原势力
+	AffiliateNilfheim     = 3 // 尼夫尔海姆势力
+	AffiliateTaiqing      = 4 // 太清殿势力
+	AffiliateAmaravati    = 5 // 阿摩婆罗提势力
+	AffiliateHeliopolis   = 6 // 赫利奥波利斯势力
+	AffiliateOlympus      = 7 // 奥林匹斯势力
+	AffiliateYuqing       = 8 // 玉清殿势力
 
 	RarityMainDeity = 0 // 主神
 	RarityOrdinary  = 1 // 普通
@@ -49,18 +53,17 @@ type TempAttribute struct {
 
 // 单位属性
 type BaseAttribute struct {
-	ID           uint64
-	Name         string
-	Type         uint32 // 类型
-	Rarity       int32  // 稀有度
-	Affiliate    int32  // 所属势力
-	Attack       uint32 // 攻击力
-	MaxDefend    uint32 // 最大护盾值
-	MaxHealth    uint32 // 最大生命值
-	MaxMove      uint32 // 最大移动力
-	BaseNoMove   bool   // 禁止移动
-	BaseNoAttack bool   // 禁止攻击
-	BaseNoCure   bool   // 禁止治疗
+	ID           uint64 `db:"id"`
+	Name         string `db:"name"`
+	Rarity       int32  `db:"rarity"`    // 稀有度
+	Affiliate    int32  `db:"affiliate"` // 所属势力
+	Attack       uint32 `db:"attack"`    // 攻击力
+	MaxDefend    uint32 `db:"defend"`    // 最大护盾值
+	MaxHealth    uint32 `db:"health"`    // 最大生命值
+	MaxMove      uint32 `db:"move"`      // 最大移动力
+	BaseNoMove   bool   `db:"nomove"`    // 禁止移动
+	BaseNoAttack bool   `db:"noattack"`  // 禁止攻击
+	BaseNoCure   bool   `db:"nocure"`    // 禁止治疗
 }
 
 func (a *BaseAttribute) CheckMoveing(location int32) error {
@@ -99,3 +102,11 @@ func (a *BaseAttribute) CheckMoveing(location int32) error {
 // 	}
 // 	return nil
 // }
+
+type UnitQuery struct {
+	Pagination *utils.Pagination `json:"page"`
+
+	ExcludeMainDeity  bool  `json:"exclude_main_deity"`  // 不包含主神
+	FilterByRarity    int32 `json:"filter_by_rarity"`    // 稀有度过滤
+	FilterByAffiliate int32 `json:"filter_by_affiliate"` // 势力过滤
+}

@@ -14,8 +14,8 @@ service Signaling {
 
 message Scene {
     repeated int32 squares = 1;
-    repeated int32 hand_card = 2;
-    repeated int32 card_library = 3;
+    repeated int64 hand_card = 2;
+    repeated int64 card_library = 3;
     int32 draw_card_countdown = 4;
 }
 

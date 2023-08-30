@@ -6,7 +6,7 @@ package entity
 // }
 
 type Player struct {
-	ID    uint64 `json:"id"`
-	Scene *Scene `json:"scene"`
-	Units Unit   `json:"unit"`
+	ID    uint64  `json:"id"`
+	Scene *Scene  `json:"scene"`
+	Units []*Unit `json:"units"`
 }

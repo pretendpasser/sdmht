@@ -6,7 +6,21 @@ import (
 	"net/http"
 
 	"sdmht/lib"
+	"sdmht/sdmht_conn/api"
 )
+
+func encodeResponse(ctx context.Context, w http.ResponseWriter, res interface{}) error {
+	if err, ok := res.(error); ok {
+		errorEncoder(ctx, err, w)
+		return nil
+	}
+	if r, ok := res.(api.Response); ok && r.Error != nil {
+		errorEncoder(ctx, r.Error, w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return json.NewEncoder(w).Encode(res.(api.Response).Value)
+}
 
 func errorEncoder(_ context.Context, failed error, w http.ResponseWriter) {
 	statusCode := http.StatusInternalServerError
