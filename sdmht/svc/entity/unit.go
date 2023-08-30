@@ -9,6 +9,7 @@ const (
 	// AffiliatedDeity = 2 //附属神明
 	Derivative = 3 //衍生物
 
+	AffiliateNanhua       = 0 // 南华庄势力
 	AffiliateAsgard       = 1 // 阿斯加德势力
 	AffiliateTakamagahara = 2 // 高天原势力
 	AffiliateNilfheim     = 3 // 尼夫尔海姆势力
@@ -55,15 +56,16 @@ type TempAttribute struct {
 type BaseAttribute struct {
 	ID           uint64 `db:"id"`
 	Name         string `db:"name"`
+	SkillName    string `db:"skill_name"`
 	Rarity       int32  `db:"rarity"`    // 稀有度
 	Affiliate    int32  `db:"affiliate"` // 所属势力
 	Attack       uint32 `db:"attack"`    // 攻击力
 	MaxDefend    uint32 `db:"defend"`    // 最大护盾值
 	MaxHealth    uint32 `db:"health"`    // 最大生命值
 	MaxMove      uint32 `db:"move"`      // 最大移动力
-	BaseNoMove   bool   `db:"nomove"`    // 禁止移动
-	BaseNoAttack bool   `db:"noattack"`  // 禁止攻击
-	BaseNoCure   bool   `db:"nocure"`    // 禁止治疗
+	BaseNoMove   bool   `db:"-"`         // 禁止移动
+	BaseNoAttack bool   `db:"-"`         // 禁止攻击
+	BaseNoCure   bool   `db:"-"`         // 禁止治疗
 }
 
 func (a *BaseAttribute) CheckMoveing(location int32) error {
