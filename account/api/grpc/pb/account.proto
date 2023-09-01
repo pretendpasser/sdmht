@@ -7,7 +7,11 @@ import "lib/protobuf/error.proto";
 import "google/protobuf/timestamp.proto";
 
 service Account {
+    rpc Register(RegisterReq) returns (RegisterRes);
+    rpc Login(LoginReq) returns (LoginRes);
+    rpc Logout(LogoutReq) returns (LogoutRes);
     rpc Authenticate(AuthenticateReq) returns (AuthenticateRes);
+    rpc Get(GetAccountReq) returns (GetAccountRes);
 }
 
 message ErrorReply {
@@ -21,11 +25,50 @@ message account {
     google.protobuf.Timestamp last_login_at = 4;
 }
 
+message RegisterReq{
+    string wechat_id = 1;
+    string user_name = 2;
+}
+
+message RegisterRes{
+    lib.Error err = 1;
+}
+
+message LoginReq{
+    string wechat_id = 1;
+    string user_name = 2;
+}
+
+message LoginRes{
+    lib.Error err = 1;
+    string token = 2;
+    account account = 3;
+}
+
+
+message LogoutReq{
+    string token = 1;
+}
+
+message LogoutRes{
+    lib.Error err = 1;
+}
+
+
 message AuthenticateReq {
     string token = 1;
 }
 
 message AuthenticateRes {
     lib.Error err   = 1;
+    account account = 2;
+}
+
+message GetAccountReq{
+    uint64 id = 1;
+}
+
+message GetAccountRes{
+    lib.Error err = 1;
     account account = 2;
 }

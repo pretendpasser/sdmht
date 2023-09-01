@@ -5,6 +5,8 @@ const (
 	UserOnline  string = "online"
 )
 
+type LoginReq struct{}
+
 type NewMatchReq struct {
 	Operator   uint64 `json:"operator"`
 	CardConfig uint64 `json:"card_config"`

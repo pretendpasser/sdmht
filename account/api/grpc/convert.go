@@ -23,13 +23,10 @@ func ConvertAccountToPB(account *entity.Account) *pb.Account {
 	}
 
 	pbAccount := &pb.Account{
-		Id:        account.ID,
-		UserName:  account.UserName,
-		CreatedAt: timestamppb.New(account.CreatedAt),
-	}
-
-	if account.LastLoginAt != nil {
-		pbAccount.LastLoginAt = timestamppb.New(*account.LastLoginAt)
+		Id:          account.ID,
+		UserName:    account.UserName,
+		CreatedAt:   timestamppb.New(account.CreatedAt),
+		LastLoginAt: timestamppb.New(account.LastLoginAt),
 	}
 
 	return pbAccount
