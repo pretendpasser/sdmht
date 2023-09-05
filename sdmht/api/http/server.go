@@ -17,10 +17,9 @@ func NewHTTPHandler(_ itfs.Service, _ *kitx.ServerOptions) http.Handler {
 	// 	httptransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 	// }
 	r := mux.NewRouter()
-	// r.Handle("/metrics", promhttp.Handler())
 	r.Use(mw.AccountMW())
 
-	r.Handle("/", XXX()).Methods("POST")
+	// r.Handle("/", XXX()).Methods("POST")
 
 	return r
 }

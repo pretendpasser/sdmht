@@ -33,8 +33,7 @@ const (
 	ErrCodeMsgNotImplemented   = 501
 	ErrCodeMsgNotFount         = 701
 
-	ErrClientRespTimeout = "client resp time out"
-
+	ErrClientResTimeout       = "client res time out"
 	ErrPocConnClientNotOnline = "client not on line"
 
 	ClientDoReqWaitRespTimeout = 5 // 向客户端发起请求并等待响应超时时间 秒
@@ -63,7 +62,6 @@ type Payload struct {
 	SN          int    `json:"cseq"`
 	PayloadType string `json:"type"` // "req" or "rsp"
 	MsgType     string `json:"msg"`  // "login" or other
-	Token       string `json:"token"`
 	Result
 	MsgContent interface{} `json:"body"` // req时 反射解出来 是个实际对应结构的对象指针
 }
@@ -92,12 +90,11 @@ func NewRespPayload(req Payload, code int, reason string, resp interface{}) Payl
 	}
 }
 
-func NewReqPayload(sn int, msgType string, token string, content interface{}) Payload {
+func NewReqPayload(sn int, msgType string, content interface{}) Payload {
 	return Payload{
 		SN:          sn,
 		PayloadType: PayloadTypeReq,
 		MsgType:     msgType,
-		Token:       token,
 		MsgContent:  content,
 	}
 }

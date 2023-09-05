@@ -196,7 +196,7 @@ func testClient() {
 // }
 
 func MakeNewMatchReq(c *Client, _ uint64, _ uint64) {
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatchRequest, c.token, &sdmht_entity.NewMatchReq{
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatch, &sdmht_entity.NewMatchReq{
 		Operator:   11,
 		CardConfig: 22,
 	})
@@ -204,6 +204,6 @@ func MakeNewMatchReq(c *Client, _ uint64, _ uint64) {
 }
 
 func MakeKeepAliveReq(c *Client, _ uint64, _ uint64) {
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAliveRequest, c.token, &sdmht_entity.KeepAliveReq{})
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
 	c.sendPayloadChan <- payload
 }

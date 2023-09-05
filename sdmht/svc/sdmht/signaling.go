@@ -2,8 +2,11 @@ package sdmht
 
 import (
 	"context"
+	"errors"
 
+	account_entity "sdmht/account/svc/entity"
 	account "sdmht/account/svc/interfaces"
+	"sdmht/lib"
 	"sdmht/lib/kitx"
 	"sdmht/lib/log"
 	"sdmht/lib/seq"
@@ -46,6 +49,36 @@ func NewSignalingService(idGenerator seq.IDGenerator,
 	}
 }
 
+func (s *signalingSvc) Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error) {
+	err := s.accountSvc.Register(ctx, &account_entity.RegisterReq{
+		WechatID: req.WeChatID,
+		UserName: req.UserName,
+	})
+	if err != nil {
+		if !errors.Is(err, lib.NewError(lib.ErrInvalidArgument, "account exist")) {
+			log.S().Errorw("Login: account register fail", "err", err)
+			return nil, err
+		}
+	}
+
+	res, err := s.accountSvc.Login(ctx, &account_entity.LoginReq{
+		WechatID: req.WeChatID,
+	})
+	if err != nil {
+		log.S().Errorw("Login: account login fail", "err", err)
+		return nil, err
+	}
+
+	if err := s.connManger.User2ConnRepo().Add(ctx, res.Account.ID, res.Account.WeChatID); err != nil {
+		log.S().Errorw("Login: add user client fail", "err", err)
+		return nil, err
+	}
+
+	return &entity.LoginRes{
+		AccountID: res.Account.ID,
+	}, nil
+}
+
 func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
 	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
 	slog.Infow("KeepAlive:Req", "params", req)
@@ -68,8 +101,8 @@ func (s *signalingSvc) Offline(ctx context.Context, req *entity.LogoutReq) error
 
 }
 
-func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRsp, error) {
-	res := &entity.NewMatchRsp{}
+func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error) {
+	res := &entity.NewMatchRes{}
 	res.Player = &entity.Player{
 		ID:    req.Operator,
 		Scene: entity.NewScene(),

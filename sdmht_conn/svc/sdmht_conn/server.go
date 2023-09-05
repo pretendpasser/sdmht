@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	account_itfs "sdmht/account/svc/interfaces"
 	"sdmht/lib"
 	"sdmht/lib/log"
 	sdmht_entity "sdmht/sdmht/svc/entity"
@@ -21,20 +20,18 @@ type Server struct {
 
 	ClientEventChan chan ClientEvent
 
-	ConnMng    itfs.ConnManager
-	AccountSvc account_itfs.Service
+	ConnMng itfs.ConnManager
 
 	closeChan chan struct{}
 
 	ServerStartTime time.Time // 起服时间
 }
 
-func NewServer(connMng itfs.ConnManager, accountSvc account_itfs.Service) *Server {
+func NewServer(connMng itfs.ConnManager) *Server {
 	return &Server{
 		clients:         make(map[uint64]*Client),
 		ClientEventChan: make(chan ClientEvent, 10),
 		ConnMng:         connMng,
-		AccountSvc:      accountSvc,
 		closeChan:       make(chan struct{}, 1),
 		ServerStartTime: time.Now(),
 	}
@@ -115,7 +112,7 @@ func (s *Server) DispatchEventToClient(ctx context.Context, accountID uint64, ev
 	if !has {
 		return res, lib.NewError(lib.ErrUnavailable, entity.ErrPocConnClientNotOnline)
 	}
-	payload := entity.NewReqPayload(c.NewSN(), event.Type, s.clients[accountID].Token(), event.Content)
+	payload := entity.NewReqPayload(c.NewSN(), event.Type, event.Content)
 
 	resp, err := c.DoRequest(payload)
 	if resp.Result.Code != entity.ErrCodeMsgSuccess {

@@ -18,6 +18,7 @@ import (
 	"sdmht/lib/utils"
 
 	"github.com/go-redis/redis/v8"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
 )
@@ -145,7 +146,7 @@ func parsesConfig(config *config) {
 	}
 
 	// mysql
-	config.DBUrl = utils.GetEnvDefault("DB_URL", "root:123456@tcp(c3_db:3306)/c3_sla?parseTime=true&multiStatements=true")
+	config.DBUrl = utils.GetEnvDefault("DB_URL", "root:123456@tcp(db:3306)/sdmht?parseTime=true&multiStatements=true")
 	if dbMaxIdleTimeStr := utils.GetEnvDefault("MYSQL_DB_MAX_IDLE_TIME", ""); dbMaxIdleTimeStr != "" {
 		config.MysqlDBMaxIdleTime, err = strconv.Atoi(dbMaxIdleTimeStr)
 		if err != nil {

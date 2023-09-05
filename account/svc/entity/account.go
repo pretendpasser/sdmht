@@ -28,7 +28,6 @@ type RegisterReq struct {
 
 type LoginReq struct {
 	WechatID string `json:"wechat_id"`
-	UserName string `json:"user_name"`
 }
 
 type LoginRes struct {

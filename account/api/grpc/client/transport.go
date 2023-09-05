@@ -10,7 +10,7 @@ import (
 
 func enRegisterReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.RegisterReq)
-	return &pb.LoginReq{
+	return &pb.RegisterReq{
 		WechatId: req.WechatID,
 		UserName: req.UserName,
 	}, nil
@@ -28,7 +28,6 @@ func enLoginReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.LoginReq)
 	return &pb.LoginReq{
 		WechatId: req.WechatID,
-		UserName: req.UserName,
 	}, nil
 }
 
@@ -37,7 +36,10 @@ func deLoginRes(_ context.Context, response interface{}) (interface{}, error) {
 	if err := res.GetErr(); err != nil {
 		return nil, lib.NewError(int(err.Errno), err.Errmsg)
 	}
-	return &entity.LoginRes{Token: res.GetToken()}, nil
+	return &entity.LoginRes{
+		Token:   res.GetToken(),
+		Account: grpc.ConvertAccountFromPB(res.GetAccount()),
+	}, nil
 }
 
 func enLogoutReq(_ context.Context, request interface{}) (interface{}, error) {

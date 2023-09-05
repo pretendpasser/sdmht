@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	account_client "sdmht/account/api/grpc/client"
 	"sdmht/lib/kitx"
 	"sdmht/lib/log"
 	"sdmht/lib/utils"
@@ -50,7 +49,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	log.S().Infow("new conn", "remote addr", conn.RemoteAddr().String())
 	// TODO
 	addr := utils.ClientIP(r)
-	client := sdmht_conn.NewClient(conn, addr, server.ClientEventChan, server.ConnMng, server.AccountSvc, server.ServerStartTime, heartBeatInterval)
+	client := sdmht_conn.NewClient(conn, addr, server.ClientEventChan, server.ConnMng, server.ServerStartTime, heartBeatInterval)
 	go client.Run()
 }
 
@@ -109,14 +108,11 @@ func main() {
 	}
 	log.S().Infof("serveAddr: %s", cfg.ServeAddr)
 
-	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second), kitx.WithMetadata(map[string][]string{"sdmht_conn_addr": {cfg.ServeAddr}}))
+	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second))
 	instance := []string{cfg.MngAddr}
 
 	sdmhtMng := sdmht_client.NewClient(sd.FixedInstancer(instance), cliOpts)
-	accountSvc := account_client.NewClient(sd.FixedInstancer([]string{cfg.AccountSvcAddr}), cliOpts)
-
-	server = sdmht_conn.NewServer(sdmhtMng, accountSvc)
-
+	server = sdmht_conn.NewServer(sdmhtMng)
 	srvOpts := kitx.NewServerOptions(
 		kitx.WithLogger(log.GetLogger()),
 		kitx.WithRateLimit(nil),

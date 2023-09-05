@@ -10,11 +10,19 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
+func MakeLoginEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.LoginReq)
+		res, err := s.Login(ctx, req)
+		return kitx.Response{Value: res, Error: err}, nil
+	}
+}
+
 func MakeNewMatchEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*entity.NewMatchReq)
-		rsp, err := s.NewMatch(ctx, req)
-		return kitx.Response{Value: rsp, Error: err}, nil
+		res, err := s.NewMatch(ctx, req)
+		return kitx.Response{Value: res, Error: err}, nil
 	}
 }
 

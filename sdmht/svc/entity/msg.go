@@ -8,9 +8,9 @@ import (
 var MsgTypes = make(map[string]interface{})
 
 const (
-	MsgTypeLoginRequest     = "login"
-	MsgTypeNewMatchRequest  = "new_match_request"
-	MsgTypeKeepAliveRequest = "keep_alive_request"
+	MsgTypeLogin     = "login"
+	MsgTypeNewMatch  = "new_match_request"
+	MsgTypeKeepAlive = "keep_alive_request"
 )
 
 type CommonResp struct{}
@@ -29,7 +29,7 @@ type DispatchEventToClientReply struct {
 }
 
 func init() {
-	MsgTypes[MsgTypeLoginRequest] = LoginReq{}
-	MsgTypes[MsgTypeNewMatchRequest] = NewMatchReq{}
-	MsgTypes[MsgTypeKeepAliveRequest] = KeepAliveReq{}
+	MsgTypes[MsgTypeLogin] = LoginReq{}
+	MsgTypes[MsgTypeNewMatch] = NewMatchReq{}
+	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
 }

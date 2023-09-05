@@ -34,7 +34,25 @@ func fromPBPlayer(in *pb.Player) (out *entity.Player) {
 	}
 }
 
-func encodeNewMatchReq(_ context.Context, request interface{}) (interface{}, error) {
+func enLoginReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.LoginReq)
+	return &pb.LoginReq{
+		UserName: req.UserName,
+		WechatId: req.WeChatID,
+	}, nil
+}
+
+func deLoginReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(*pb.LoginReply)
+	if r.GetErr() != nil {
+		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
+	}
+	return &entity.LoginRes{
+		AccountID: r.GetAccountId(),
+	}, nil
+}
+
+func enNewMatchReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.NewMatchReq)
 	return &pb.NewMatchReq{
 		Operator:   req.Operator,
@@ -42,24 +60,24 @@ func encodeNewMatchReq(_ context.Context, request interface{}) (interface{}, err
 	}, nil
 }
 
-func decodeNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
+func deNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(*pb.NewMatchReply)
 	if r.GetErr() != nil {
 		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
 	}
-	return &entity.NewMatchRsp{
+	return &entity.NewMatchRes{
 		Player: fromPBPlayer(r.Player),
 	}, nil
 }
 
-func encodeKeepAliveReq(_ context.Context, request interface{}) (interface{}, error) {
+func enKeepAliveReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.KeepAliveReq)
 	return &pb.KeepAliveReq{
 		Operator: req.Operator,
 	}, nil
 }
 
-func encodeLogoutReq(_ context.Context, request interface{}) (interface{}, error) {
+func enLogoutReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.LogoutReq)
 	return &pb.LogoutReq{
 		Operator: req.Operator,
@@ -67,7 +85,7 @@ func encodeLogoutReq(_ context.Context, request interface{}) (interface{}, error
 	}, nil
 }
 
-func decodeCommonReply(_ context.Context, response interface{}) (interface{}, error) {
+func deCommonReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(*pb.CommonReply)
 	if r.GetErr() != nil {
 		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)

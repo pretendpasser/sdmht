@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"sdmht/account/svc/entity"
@@ -34,32 +35,30 @@ func NewService(accountRepo itfs.AccountRepo,
 }
 
 func (s *service) Register(ctx context.Context, req *entity.RegisterReq) error {
+	if req.WechatID == "" {
+		return lib.NewError(lib.ErrInvalidArgument, "invalid wechatid")
+	}
+	_, err := s.accountRepo.GetByWechatID(ctx, req.WechatID)
+	if err != nil {
+		if strings.Compare(err.Error(), "sql: no rows in result set") != 0 {
+			log.S().Errorw("Register:get account by wechatid fail", "err", err)
+			return err
+		}
+	} else {
+		log.S().Errorw("account exist", "req", req)
+		return lib.NewError(lib.ErrInvalidArgument, "account exist")
+	}
+
 	account := &entity.Account{
 		WeChatID: req.WechatID,
 		UserName: req.UserName,
 	}
-	err := s.accountRepo.Add(ctx, account)
+	err = s.accountRepo.Add(ctx, account)
 	if err != nil {
 		log.S().Errorw("Register:add account fail", "err", err)
 		return err
 	}
 	return nil
-}
-
-func (s *service) Authenticate(ctx context.Context, token string) (*entity.Account, error) {
-	claim, err := s.verifyToken(ctx, token)
-	if err != nil {
-		log.S().Errorf("verify token err: %v", err)
-		return nil, err
-	}
-
-	account, err := s.accountRepo.Get(ctx, claim.AccountID)
-	if err != nil {
-		log.S().Errorw("Authenticate:FindByID err", "err", err)
-		return nil, err
-	}
-
-	return account, nil
 }
 
 func (s *service) Login(ctx context.Context, req *entity.LoginReq) (res *entity.LoginRes, err error) {
@@ -104,6 +103,22 @@ func (s *service) Logout(ctx context.Context, token string) error {
 		log.S().Warnf("delete token failed")
 	}
 	return nil
+}
+
+func (s *service) Authenticate(ctx context.Context, token string) (*entity.Account, error) {
+	claim, err := s.verifyToken(ctx, token)
+	if err != nil {
+		log.S().Errorf("verify token err: %v", err)
+		return nil, err
+	}
+
+	account, err := s.accountRepo.Get(ctx, claim.AccountID)
+	if err != nil {
+		log.S().Errorw("Authenticate:FindByID err", "err", err)
+		return nil, err
+	}
+
+	return account, nil
 }
 
 func (s *service) verifyToken(ctx context.Context, tokenString string) (*entity.Claims, error) {

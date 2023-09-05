@@ -36,7 +36,6 @@ message RegisterRes{
 
 message LoginReq{
     string wechat_id = 1;
-    string user_name = 2;
 }
 
 message LoginRes{

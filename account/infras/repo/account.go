@@ -2,9 +2,11 @@ package repo
 
 import (
 	"context"
+	"time"
 
 	"sdmht/account/svc/entity"
 	itfs "sdmht/account/svc/interfaces"
+	"sdmht/lib/utils"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -68,7 +70,8 @@ func (r *accountRepo) Update(ctx context.Context, account *entity.Account) error
 	mset := make(map[string]interface{})
 	mset["user_name"] = account.UserName
 	mset["wechat_id"] = account.WeChatID
-	mset["last_login_at"] = account.LastLoginAt
+	lastLoginAt := account.LastLoginAt.In(utils.ShanghaiTimeLocation())
+	mset["last_login_at"] = time.Date(lastLoginAt.Year(), lastLoginAt.Month(), lastLoginAt.Day(), lastLoginAt.Hour(), lastLoginAt.Minute(), lastLoginAt.Second(), 0, time.UTC)
 
 	builder := sq.Update(`account`).Where(sq.Eq{"id": account.ID}).SetMap(mset)
 	sql, args, err := builder.ToSql()

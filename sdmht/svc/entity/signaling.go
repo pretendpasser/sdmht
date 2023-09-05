@@ -5,14 +5,21 @@ const (
 	UserOnline  string = "online"
 )
 
-type LoginReq struct{}
+type LoginReq struct {
+	WeChatID string
+	UserName string
+}
+
+type LoginRes struct {
+	AccountID uint64
+}
 
 type NewMatchReq struct {
 	Operator   uint64 `json:"operator"`
 	CardConfig uint64 `json:"card_config"`
 }
 
-type NewMatchRsp struct {
+type NewMatchRes struct {
 	Player *Player `json:"player"`
 }
 

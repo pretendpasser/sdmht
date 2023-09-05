@@ -18,6 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SignalingClient interface {
+	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginReply, error)
 	NewMatch(ctx context.Context, in *NewMatchReq, opts ...grpc.CallOption) (*NewMatchReply, error)
 	KeepAlive(ctx context.Context, in *KeepAliveReq, opts ...grpc.CallOption) (*CommonReply, error)
 	Offline(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*CommonReply, error)
@@ -29,6 +30,15 @@ type signalingClient struct {
 
 func NewSignalingClient(cc grpc.ClientConnInterface) SignalingClient {
 	return &signalingClient{cc}
+}
+
+func (c *signalingClient) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginReply, error) {
+	out := new(LoginReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *signalingClient) NewMatch(ctx context.Context, in *NewMatchReq, opts ...grpc.CallOption) (*NewMatchReply, error) {
@@ -62,6 +72,7 @@ func (c *signalingClient) Offline(ctx context.Context, in *LogoutReq, opts ...gr
 // All implementations must embed UnimplementedSignalingServer
 // for forward compatibility
 type SignalingServer interface {
+	Login(context.Context, *LoginReq) (*LoginReply, error)
 	NewMatch(context.Context, *NewMatchReq) (*NewMatchReply, error)
 	KeepAlive(context.Context, *KeepAliveReq) (*CommonReply, error)
 	Offline(context.Context, *LogoutReq) (*CommonReply, error)
@@ -72,6 +83,9 @@ type SignalingServer interface {
 type UnimplementedSignalingServer struct {
 }
 
+func (UnimplementedSignalingServer) Login(context.Context, *LoginReq) (*LoginReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
 func (UnimplementedSignalingServer) NewMatch(context.Context, *NewMatchReq) (*NewMatchReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewMatch not implemented")
 }
@@ -92,6 +106,24 @@ type UnsafeSignalingServer interface {
 
 func RegisterSignalingServer(s grpc.ServiceRegistrar, srv SignalingServer) {
 	s.RegisterService(&Signaling_ServiceDesc, srv)
+}
+
+func _Signaling_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/signaling_pb.Signaling/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).Login(ctx, req.(*LoginReq))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Signaling_NewMatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -155,6 +187,10 @@ var Signaling_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "signaling_pb.Signaling",
 	HandlerType: (*SignalingServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _Signaling_Login_Handler,
+		},
 		{
 			MethodName: "NewMatch",
 			Handler:    _Signaling_NewMatch_Handler,

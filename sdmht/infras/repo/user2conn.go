@@ -44,8 +44,8 @@ func (r *user2ConnRepo) Find(ctx context.Context, neids []uint64) (map[uint64]st
 	return res, nil
 }
 
-func (r *user2ConnRepo) Get(ctx context.Context, neid uint64) (string, error) {
-	field := fmt.Sprintf("%d", neid)
+func (r *user2ConnRepo) Get(ctx context.Context, id uint64) (string, error) {
+	field := fmt.Sprintf("%d", id)
 	ret, err := r.rdb.HGet(ctx, r.key, field).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -61,12 +61,13 @@ func (r *user2ConnRepo) FindConnNames(ctx context.Context) ([]string, error) {
 	return r.rdb.HVals(ctx, r.key).Result()
 }
 
-func (r *user2ConnRepo) Add(ctx context.Context, neid uint64, connName string) error {
-	_, err := r.rdb.HSet(ctx, r.key, neid, connName).Result()
+func (r *user2ConnRepo) Add(ctx context.Context, id uint64, wechat_id string) error {
+	fmt.Println(r.key, id)
+	_, err := r.rdb.HSet(ctx, r.key, id, wechat_id).Result()
 	return err
 }
 
-func (r *user2ConnRepo) Delete(ctx context.Context, neid uint64) error {
-	_, err := r.rdb.HDel(ctx, r.key, fmt.Sprintf("%d", neid)).Result()
+func (r *user2ConnRepo) Delete(ctx context.Context, id uint64) error {
+	_, err := r.rdb.HDel(ctx, r.key, fmt.Sprintf("%d", id)).Result()
 	return err
 }

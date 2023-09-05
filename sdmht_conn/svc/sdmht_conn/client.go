@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	account_itfs "sdmht/account/svc/interfaces"
 	"sdmht/lib"
 	"sdmht/lib/log"
 	sdmht_entity "sdmht/sdmht/svc/entity"
@@ -26,9 +25,9 @@ type Client struct {
 
 	addr      string
 	sn        int
-	token     string
 	accountID uint64
 
+	serverStartTime   time.Time
 	loginTime         time.Time // 用于客户端重登时，pocmng可能有过去的消息，刚发过来，此时可以判断时间做废弃
 	lastHeartBeatTime time.Time
 	heartBeatInterval int
@@ -41,14 +40,11 @@ type Client struct {
 
 	notifyClientEvent chan ClientEvent
 
-	connMng    itfs.ConnManager
-	accountSvc account_itfs.Service
-
-	serverStartTime time.Time
+	connMng itfs.ConnManager
 }
 
 func NewClient(conn *websocket.Conn, addr string, notifyClientEvent chan ClientEvent,
-	connMng itfs.ConnManager, accountSvc account_itfs.Service, serverStartTime time.Time, heartBeatInterval int) *Client {
+	connMng itfs.ConnManager, serverStartTime time.Time, heartBeatInterval int) *Client {
 	return &Client{
 		conn:              conn,
 		addr:              addr,
@@ -58,7 +54,6 @@ func NewClient(conn *websocket.Conn, addr string, notifyClientEvent chan ClientE
 		quitReason:        make(chan string, 1),
 		notifyClientEvent: notifyClientEvent,
 		connMng:           connMng,
-		accountSvc:        accountSvc,
 		serverStartTime:   serverStartTime,
 		heartBeatInterval: heartBeatInterval,
 	}
@@ -122,32 +117,7 @@ func (c *Client) HandleReadMsg() {
 		} else {
 			if payload.PayloadType == entity.PayloadTypeRsp {
 				c.handleRespMsg(payload)
-				continue
-			}
-
-			// if c.token == "" || strings.Compare(c.token, payload.Token) != 0 {
-			// 	account, err := c.accountSvc.Authenticate(context.TODO(), payload.Token)
-			// 	if err != nil {
-			// 		log.S().Errorw("invalid token", "err", err, "client_mem_addr", &c)
-			// 		payload.PayloadType = entity.PayloadTypeRsp
-			// 		payload.Result = entity.NewResult(entity.ErrCodeMsgUnauthorized, entity.ErrCodeMsgs[entity.ErrCodeMsgUnauthorized])
-			// 		payload.MsgContent = struct{}{}
-			// 		c.sendPayloadChan <- payload
-			// 		c.close(entity.ClientQuitReasonUnauthorized)
-			// 		return
-			// 	}
-			// 	if c.token != "" {
-			// 		c.notifyClientEvent <- NewClientEvent(ClientEventTypeRemove, c.AccountID(), c)
-			// 	}
-			// 	c.SetInfo(account.ID, payload.Token)
-			// 	c.SetLoginTime(time.Now())
-			// 	c.SetLastHeartBeatTime()
-			// 	slog(ctx).Debugw("add client to server start", "clientID", c.AccountID)
-			// 	c.notifyClientEvent <- NewClientEvent(ClientEventTypeAdd, c.AccountID(), c)
-			// 	slog(ctx).Debugw("add client to server done", "clientID", c.AccountID)
-			// }
-
-			if payload.PayloadType == entity.PayloadTypeReq {
+			} else if payload.PayloadType == entity.PayloadTypeReq {
 				respPayload := c.handleReqMsg(ctx, payload)
 				c.sendPayloadChan <- respPayload
 			}
@@ -213,6 +183,20 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 	var err error
 
 	switch payload.MsgType {
+	case sdmht_entity.MsgTypeLogin:
+		req := payload.MsgContent.(*sdmht_entity.LoginReq)
+		res, err2 := c.connMng.Login(context.TODO(), req)
+		if err2 != nil {
+			err = err2
+			break
+		}
+		log.S().Infow("client login res", "res", res, "AccountID", res.AccountID)
+		now := time.Now()
+		c.SetInfo(res.AccountID)
+		c.SetLoginTime(now)
+		c.SetLastHeartBeatTime()
+		c.notifyClientEvent <- NewClientEvent(ClientEventTypeAdd, c.AccountID(), c)
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", res)
 	// case webinar_entity.MsgTypeGetEvents:
 	// 	content := payload.MsgContent.(*webinar_entity.FindRelatedEventReq)
 	// 	content.StartTime = utils.TimestampToTime(content.Begin)
@@ -253,7 +237,7 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 	// 	}
 	// 	slog(ctx).Infow("SwitchSpeecher resp", "resp", resp, "ac", resp.AudioParam, "vc", resp.VideoParam)
 	// 	ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", resp)
-	case sdmht_entity.MsgTypeNewMatchRequest:
+	case sdmht_entity.MsgTypeNewMatch:
 		content := payload.MsgContent.(*sdmht_entity.NewMatchReq)
 		rsp, err1 := c.connMng.NewMatch(ctx, content)
 		if err1 != nil {
@@ -261,11 +245,11 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 			break
 		}
 		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", rsp)
-	case sdmht_entity.MsgTypeKeepAliveRequest:
+	case sdmht_entity.MsgTypeKeepAlive:
 		c.SetLastHeartBeatTime()
-		content := payload.MsgContent.(*sdmht_entity.KeepAliveReq)
-		content.Operator = c.AccountID()
-		err = c.connMng.KeepAlive(ctx, content)
+		req := payload.MsgContent.(*sdmht_entity.KeepAliveReq)
+		req.Operator = c.AccountID()
+		err = c.connMng.KeepAlive(ctx, req)
 		if err != nil {
 			break
 		}
@@ -299,7 +283,7 @@ func (c *Client) DoRequest(req entity.Payload) (resp entity.Payload, err error) 
 	select {
 	case <-timeout.C:
 		c.pendingMsgs.Delete(pendingMsg.req.SN)
-		err = errors.New(entity.ErrClientRespTimeout)
+		err = errors.New(entity.ErrClientResTimeout)
 	case resp = <-pendingMsg.rspChan:
 	}
 	log.S().Infow("client DoRequest", "req", req, "resp", resp, "err", err)
@@ -340,23 +324,16 @@ func (c *Client) LoggedIn() bool {
 	return c.loginTime != time.Time{}
 }
 
-func (c *Client) SetInfo(AccountID uint64, token string) {
+func (c *Client) SetInfo(AccountID uint64) {
 	c.rwLock.Lock()
 	defer c.rwLock.Unlock()
 	c.accountID = AccountID
-	c.token = token
 }
 
 func (c *Client) AccountID() uint64 {
 	c.rwLock.RLock()
 	defer c.rwLock.RUnlock()
 	return c.accountID
-}
-
-func (c *Client) Token() string {
-	c.rwLock.RLock()
-	defer c.rwLock.RUnlock()
-	return c.token
 }
 
 func (c *Client) LoginTime() time.Time {
@@ -406,6 +383,12 @@ func (c *Client) NewSN() int {
 	return c.sn
 }
 
+func (c *Client) SN() int {
+	c.rwLock.RLock()
+	defer c.rwLock.RUnlock()
+	return c.sn
+}
+
 type pendingMsg struct {
 	req     entity.Payload
 	rspChan chan entity.Payload
@@ -417,12 +400,6 @@ func newPendingMsg(req entity.Payload) pendingMsg {
 		rspChan: make(chan entity.Payload, 1),
 	}
 }
-
-//func (c *Client) SN() int {
-//	c.rwLock.RLock()
-//	defer c.rwLock.RUnlock()
-//	return c.sn
-//}
 
 //func (c *Client) HandleRequest(payload entity.Payload) (resp entity.Payload, error error) {
 //	// TODO

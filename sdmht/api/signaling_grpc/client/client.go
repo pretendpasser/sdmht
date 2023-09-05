@@ -19,17 +19,26 @@ var _ itfs.SignalingService = (*grpcClient)(nil)
 
 // grpcClient is the Go kit client implementation for interfaces.Service.
 type grpcClient struct {
+	LoginEndpoint     endpoint.Endpoint
 	NewMatchEndpoint  endpoint.Endpoint
 	KeepAliveEndpoint endpoint.Endpoint
 	OfflineEndpoint   endpoint.Endpoint
 }
 
-func (c *grpcClient) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRsp, error) {
-	rsp, err := c.NewMatchEndpoint(ctx, req)
+func (c *grpcClient) Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error) {
+	res, err := c.LoginEndpoint(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return rsp.(*entity.NewMatchRsp), nil
+	return res.(*entity.LoginRes), nil
+}
+
+func (c *grpcClient) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error) {
+	res, err := c.NewMatchEndpoint(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*entity.NewMatchRes), nil
 }
 
 func (c *grpcClient) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
@@ -54,7 +63,7 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 	tracer := opts.ZipkinTracer()
 
 	options := []grpctransport.ClientOption{
-		grpctransport.ClientBefore(opts.MetadataToGRPC("webinar")),
+		grpctransport.ClientBefore(opts.MetadataToGRPC("sdmht")),
 		grpctransport.ClientBefore(opts.SourceToGRPC()),
 	}
 	if tracer != nil {
@@ -62,13 +71,24 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 	}
 
 	var serviceName = "signaling_pb.Signaling"
+	c.LoginEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"Login",
+			enLoginReq,
+			deLoginReply,
+			pb.LoginReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.Login"
+	}, opts)
 	c.NewMatchEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
 			conn,
 			serviceName,
 			"NewMatch",
-			encodeNewMatchReq,
-			decodeNewMatchReply,
+			enNewMatchReq,
+			deNewMatchReply,
 			pb.NewMatchReply{},
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.NewMatch"
@@ -78,8 +98,8 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			conn,
 			serviceName,
 			"KeepAlive",
-			encodeKeepAliveReq,
-			decodeCommonReply,
+			enKeepAliveReq,
+			deCommonReply,
 			pb.CommonReply{},
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.KeepAlive"
@@ -89,8 +109,8 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			conn,
 			serviceName,
 			"Offline",
-			encodeLogoutReq,
-			decodeCommonReply,
+			enLogoutReq,
+			deCommonReply,
 			pb.CommonReply{},
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.Logout"

@@ -7,6 +7,7 @@ option go_package = "sdmht/sdmht/api/signaling_grpc/signaling";
 import "lib/protobuf/error.proto";
 
 service Signaling {
+    rpc Login(LoginReq) returns (LoginReply);
     rpc NewMatch(NewMatchReq) returns (NewMatchReply);
     rpc KeepAlive(KeepAliveReq) returns (CommonReply);
     rpc Offline(LogoutReq) returns (CommonReply);
@@ -32,6 +33,17 @@ message NewMatchReq {
 message NewMatchReply {
     lib.Error err = 1;
     Player player = 2;
+}
+
+
+message LoginReq {
+    string wechat_id = 1;
+    string user_name = 2;
+}
+
+message LoginReply {
+    lib.Error err = 1;
+    uint64 account_id = 2;
 }
 
 message CommonReply {

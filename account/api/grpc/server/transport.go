@@ -13,8 +13,12 @@ import (
 
 func decodeRegisterReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.RegisterReq)
-	return req, nil
+	return &entity.RegisterReq{
+		WechatID: req.GetWechatId(),
+		UserName: req.GetUserName(),
+	}, nil
 }
+
 func enRegisterRes(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)
 	res := &pb.RegisterRes{}
@@ -31,8 +35,11 @@ func enRegisterRes(_ context.Context, response interface{}) (interface{}, error)
 
 func decodeLoginReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.LoginReq)
-	return req, nil
+	return &entity.LoginReq{
+		WechatID: req.GetWechatId(),
+	}, nil
 }
+
 func enLoginRes(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)
 	res := &pb.LoginRes{}
@@ -90,7 +97,7 @@ func enAuthenticateRes(_ context.Context, response interface{}) (interface{}, er
 
 func decodeGetAccountReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.GetAccountReq)
-	return req, nil
+	return req.GetId(), nil
 }
 func enGetAccountRes(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)

@@ -1,4 +1,4 @@
-package signaling_grpc
+package server
 
 import (
 	"context"
@@ -31,7 +31,30 @@ func toPBPlayer(in *entity.Player) (out *pb.Player) {
 	}
 }
 
-func decodeNewMatchReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+func deLoginReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+	req := grpcReq.(*pb.LoginReq)
+	return &entity.LoginReq{
+		WeChatID: req.GetWechatId(),
+		UserName: req.GetUserName(),
+	}, nil
+}
+
+func enLoginReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(kitx.Response)
+	rsp := &pb.LoginReply{}
+	if r.Error != nil {
+		rsp.Err = errpb.ToPbError(r.Error)
+		return rsp, nil
+	}
+	rr := r.Value.(*entity.LoginRes)
+	if rr == nil {
+		return rsp, nil
+	}
+	rsp.AccountId = rr.AccountID
+	return rsp, nil
+}
+
+func deNewMatchReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.NewMatchReq)
 	return &entity.NewMatchReq{
 		Operator:   req.Operator,
@@ -39,14 +62,14 @@ func decodeNewMatchReq(_ context.Context, grpcReq interface{}) (interface{}, err
 	}, nil
 }
 
-func encodeNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
+func enNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)
 	rsp := &pb.NewMatchReply{}
 	if r.Error != nil {
 		rsp.Err = errpb.ToPbError(r.Error)
 		return rsp, nil
 	}
-	rr := r.Value.(*entity.NewMatchRsp)
+	rr := r.Value.(*entity.NewMatchRes)
 	if rr == nil {
 		return rsp, nil
 	}
@@ -54,7 +77,7 @@ func encodeNewMatchReply(_ context.Context, response interface{}) (interface{}, 
 	return rsp, nil
 }
 
-func encodeCommonReply(_ context.Context, response interface{}) (interface{}, error) {
+func enCommonReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)
 	rsp := &pb.CommonReply{}
 	if r.Error != nil {
@@ -64,14 +87,14 @@ func encodeCommonReply(_ context.Context, response interface{}) (interface{}, er
 	return rsp, nil
 }
 
-func decodeKeepAliveReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+func deKeepAliveReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.KeepAliveReq)
 	return &entity.KeepAliveReq{
 		Operator: req.Operator,
 	}, nil
 }
 
-func decodeLogoutReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+func deLogoutReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.LogoutReq)
 	return &entity.LogoutReq{
 		Operator: req.Operator,

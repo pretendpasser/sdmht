@@ -16,7 +16,7 @@ import (
 	"sdmht/lib/seq"
 	"sdmht/lib/utils"
 	apihttp "sdmht/sdmht/api/http"
-	"sdmht/sdmht/api/signaling_grpc"
+	"sdmht/sdmht/api/signaling_grpc/server"
 	signaling_pb "sdmht/sdmht/api/signaling_grpc/signaling_pb"
 	"sdmht/sdmht/infras/repo"
 	sdmht_svc "sdmht/sdmht/svc/sdmht"
@@ -96,7 +96,7 @@ func main() {
 	sdmhtSvc := sdmht_svc.NewService(lineupRepo)
 	accountSvc := accountcli.NewClient(sd.FixedInstancer([]string{utils.GetEnvDefault("ACCOUNT_ACCESS_ADDR", "account:7001")}), cliOpts)
 	signalingSvc := sdmht_svc.NewSignalingService(idGenerator, nil, accountSvc, connMgr)
-	grpcServer := signaling_grpc.NewGRPCServer(signalingSvc, srvOpts)
+	grpcServer := server.NewGRPCServer(signalingSvc, srvOpts)
 	grpcService := grpc.NewServer()
 	signaling_pb.RegisterSignalingServer(grpcService, grpcServer)
 	go func() {
@@ -169,7 +169,7 @@ func parsesConfig(config *config) {
 	}
 
 	// mysql
-	config.DBUrl = utils.GetEnvDefault("DB_URL", "root:123456@tcp(c3_db:3306)/c3_sla?parseTime=true&multiStatements=true")
+	config.DBUrl = utils.GetEnvDefault("DB_URL", "root:123456@tcp(db:3306)/sdmht?parseTime=true&multiStatements=true")
 	if dbMaxIdleTimeStr := utils.GetEnvDefault("MYSQL_DB_MAX_IDLE_TIME", ""); dbMaxIdleTimeStr != "" {
 		config.MysqlDBMaxIdleTime, err = strconv.Atoi(dbMaxIdleTimeStr)
 		if err != nil {
