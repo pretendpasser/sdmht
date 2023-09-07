@@ -18,6 +18,38 @@ func MakeLoginEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	}
 }
 
+func MakeNewLineupEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.NewLineupReq)
+		err = s.NewLineup(ctx, req)
+		return kitx.Response{Value: nil, Error: err}, nil
+	}
+}
+
+func MakeFindLineupEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.FindLineupReq)
+		res, err := s.FindLineup(ctx, req)
+		return kitx.Response{Value: res, Error: err}, nil
+	}
+}
+
+func MakeUpdateLineupEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.UpdateLineupReq)
+		err = s.UpdateLineup(ctx, req)
+		return kitx.Response{Value: nil, Error: err}, nil
+	}
+}
+
+func MakeDeleteLineupEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.DeleteLineupReq)
+		err = s.DeleteLineup(ctx, req)
+		return kitx.Response{Value: nil, Error: err}, nil
+	}
+}
+
 func MakeNewMatchEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*entity.NewMatchReq)

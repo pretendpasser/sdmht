@@ -21,6 +21,140 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type CommonReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Err *error1.Error `protobuf:"bytes,1,opt,name=err,proto3" json:"err,omitempty"`
+}
+
+func (x *CommonReply) Reset() {
+	*x = CommonReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signaling_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonReply) ProtoMessage() {}
+
+func (x *CommonReply) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonReply.ProtoReflect.Descriptor instead.
+func (*CommonReply) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CommonReply) GetErr() *error1.Error {
+	if x != nil {
+		return x.Err
+	}
+	return nil
+}
+
+type Lineup struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id           uint64   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccountId    uint64   `protobuf:"varint,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Name         string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Enabled      bool     `protobuf:"varint,4,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	Units        []uint64 `protobuf:"varint,5,rep,packed,name=units,proto3" json:"units,omitempty"`
+	CardLibrarys []uint64 `protobuf:"varint,6,rep,packed,name=card_librarys,json=cardLibrarys,proto3" json:"card_librarys,omitempty"`
+}
+
+func (x *Lineup) Reset() {
+	*x = Lineup{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signaling_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Lineup) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Lineup) ProtoMessage() {}
+
+func (x *Lineup) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Lineup.ProtoReflect.Descriptor instead.
+func (*Lineup) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Lineup) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Lineup) GetAccountId() uint64 {
+	if x != nil {
+		return x.AccountId
+	}
+	return 0
+}
+
+func (x *Lineup) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Lineup) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *Lineup) GetUnits() []uint64 {
+	if x != nil {
+		return x.Units
+	}
+	return nil
+}
+
+func (x *Lineup) GetCardLibrarys() []uint64 {
+	if x != nil {
+		return x.CardLibrarys
+	}
+	return nil
+}
+
 type Scene struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -35,7 +169,7 @@ type Scene struct {
 func (x *Scene) Reset() {
 	*x = Scene{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[0]
+		mi := &file_signaling_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -48,7 +182,7 @@ func (x *Scene) String() string {
 func (*Scene) ProtoMessage() {}
 
 func (x *Scene) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[0]
+	mi := &file_signaling_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +195,7 @@ func (x *Scene) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Scene.ProtoReflect.Descriptor instead.
 func (*Scene) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{0}
+	return file_signaling_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Scene) GetSquares() []int32 {
@@ -104,7 +238,7 @@ type Player struct {
 func (x *Player) Reset() {
 	*x = Player{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[1]
+		mi := &file_signaling_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -117,7 +251,7 @@ func (x *Player) String() string {
 func (*Player) ProtoMessage() {}
 
 func (x *Player) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[1]
+	mi := &file_signaling_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -130,7 +264,7 @@ func (x *Player) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Player.ProtoReflect.Descriptor instead.
 func (*Player) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{1}
+	return file_signaling_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Player) GetId() uint64 {
@@ -159,7 +293,7 @@ type NewMatchReq struct {
 func (x *NewMatchReq) Reset() {
 	*x = NewMatchReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[2]
+		mi := &file_signaling_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -172,7 +306,7 @@ func (x *NewMatchReq) String() string {
 func (*NewMatchReq) ProtoMessage() {}
 
 func (x *NewMatchReq) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[2]
+	mi := &file_signaling_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -185,7 +319,7 @@ func (x *NewMatchReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NewMatchReq.ProtoReflect.Descriptor instead.
 func (*NewMatchReq) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{2}
+	return file_signaling_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *NewMatchReq) GetOperator() uint64 {
@@ -214,7 +348,7 @@ type NewMatchReply struct {
 func (x *NewMatchReply) Reset() {
 	*x = NewMatchReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[3]
+		mi := &file_signaling_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -227,7 +361,7 @@ func (x *NewMatchReply) String() string {
 func (*NewMatchReply) ProtoMessage() {}
 
 func (x *NewMatchReply) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[3]
+	mi := &file_signaling_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -240,7 +374,7 @@ func (x *NewMatchReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NewMatchReply.ProtoReflect.Descriptor instead.
 func (*NewMatchReply) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{3}
+	return file_signaling_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *NewMatchReply) GetErr() *error1.Error {
@@ -269,7 +403,7 @@ type LoginReq struct {
 func (x *LoginReq) Reset() {
 	*x = LoginReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[4]
+		mi := &file_signaling_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -282,7 +416,7 @@ func (x *LoginReq) String() string {
 func (*LoginReq) ProtoMessage() {}
 
 func (x *LoginReq) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[4]
+	mi := &file_signaling_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -295,7 +429,7 @@ func (x *LoginReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginReq.ProtoReflect.Descriptor instead.
 func (*LoginReq) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{4}
+	return file_signaling_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *LoginReq) GetWechatId() string {
@@ -324,7 +458,7 @@ type LoginReply struct {
 func (x *LoginReply) Reset() {
 	*x = LoginReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[5]
+		mi := &file_signaling_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -337,7 +471,7 @@ func (x *LoginReply) String() string {
 func (*LoginReply) ProtoMessage() {}
 
 func (x *LoginReply) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[5]
+	mi := &file_signaling_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -350,7 +484,7 @@ func (x *LoginReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginReply.ProtoReflect.Descriptor instead.
 func (*LoginReply) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{5}
+	return file_signaling_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *LoginReply) GetErr() *error1.Error {
@@ -367,31 +501,31 @@ func (x *LoginReply) GetAccountId() uint64 {
 	return 0
 }
 
-type CommonReply struct {
+type NewLineupReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Err *error1.Error `protobuf:"bytes,1,opt,name=err,proto3" json:"err,omitempty"`
+	Lineup *Lineup `protobuf:"bytes,1,opt,name=lineup,proto3" json:"lineup,omitempty"`
 }
 
-func (x *CommonReply) Reset() {
-	*x = CommonReply{}
+func (x *NewLineupReq) Reset() {
+	*x = NewLineupReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[6]
+		mi := &file_signaling_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *CommonReply) String() string {
+func (x *NewLineupReq) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CommonReply) ProtoMessage() {}
+func (*NewLineupReq) ProtoMessage() {}
 
-func (x *CommonReply) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[6]
+func (x *NewLineupReq) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -402,16 +536,228 @@ func (x *CommonReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CommonReply.ProtoReflect.Descriptor instead.
-func (*CommonReply) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{6}
+// Deprecated: Use NewLineupReq.ProtoReflect.Descriptor instead.
+func (*NewLineupReq) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *CommonReply) GetErr() *error1.Error {
+func (x *NewLineupReq) GetLineup() *Lineup {
+	if x != nil {
+		return x.Lineup
+	}
+	return nil
+}
+
+type FindLineupReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AccountId uint64 `protobuf:"varint,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+}
+
+func (x *FindLineupReq) Reset() {
+	*x = FindLineupReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signaling_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindLineupReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindLineupReq) ProtoMessage() {}
+
+func (x *FindLineupReq) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindLineupReq.ProtoReflect.Descriptor instead.
+func (*FindLineupReq) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *FindLineupReq) GetAccountId() uint64 {
+	if x != nil {
+		return x.AccountId
+	}
+	return 0
+}
+
+type FindLineupReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Err     *error1.Error `protobuf:"bytes,1,opt,name=err,proto3" json:"err,omitempty"`
+	Total   int32         `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Lineups []*Lineup     `protobuf:"bytes,3,rep,name=lineups,proto3" json:"lineups,omitempty"`
+}
+
+func (x *FindLineupReply) Reset() {
+	*x = FindLineupReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signaling_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindLineupReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindLineupReply) ProtoMessage() {}
+
+func (x *FindLineupReply) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindLineupReply.ProtoReflect.Descriptor instead.
+func (*FindLineupReply) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *FindLineupReply) GetErr() *error1.Error {
 	if x != nil {
 		return x.Err
 	}
 	return nil
+}
+
+func (x *FindLineupReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *FindLineupReply) GetLineups() []*Lineup {
+	if x != nil {
+		return x.Lineups
+	}
+	return nil
+}
+
+type UpdateLineupReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Lineup *Lineup `protobuf:"bytes,1,opt,name=lineup,proto3" json:"lineup,omitempty"`
+}
+
+func (x *UpdateLineupReq) Reset() {
+	*x = UpdateLineupReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signaling_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateLineupReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateLineupReq) ProtoMessage() {}
+
+func (x *UpdateLineupReq) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateLineupReq.ProtoReflect.Descriptor instead.
+func (*UpdateLineupReq) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UpdateLineupReq) GetLineup() *Lineup {
+	if x != nil {
+		return x.Lineup
+	}
+	return nil
+}
+
+type DeleteLineupReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id        uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccountId uint64 `protobuf:"varint,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+}
+
+func (x *DeleteLineupReq) Reset() {
+	*x = DeleteLineupReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signaling_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteLineupReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteLineupReq) ProtoMessage() {}
+
+func (x *DeleteLineupReq) ProtoReflect() protoreflect.Message {
+	mi := &file_signaling_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteLineupReq.ProtoReflect.Descriptor instead.
+func (*DeleteLineupReq) Descriptor() ([]byte, []int) {
+	return file_signaling_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DeleteLineupReq) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *DeleteLineupReq) GetAccountId() uint64 {
+	if x != nil {
+		return x.AccountId
+	}
+	return 0
 }
 
 type KeepAliveReq struct {
@@ -425,7 +771,7 @@ type KeepAliveReq struct {
 func (x *KeepAliveReq) Reset() {
 	*x = KeepAliveReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[7]
+		mi := &file_signaling_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -438,7 +784,7 @@ func (x *KeepAliveReq) String() string {
 func (*KeepAliveReq) ProtoMessage() {}
 
 func (x *KeepAliveReq) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[7]
+	mi := &file_signaling_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +797,7 @@ func (x *KeepAliveReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeepAliveReq.ProtoReflect.Descriptor instead.
 func (*KeepAliveReq) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{7}
+	return file_signaling_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *KeepAliveReq) GetOperator() uint64 {
@@ -473,7 +819,7 @@ type LogoutReq struct {
 func (x *LogoutReq) Reset() {
 	*x = LogoutReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_signaling_proto_msgTypes[8]
+		mi := &file_signaling_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -486,7 +832,7 @@ func (x *LogoutReq) String() string {
 func (*LogoutReq) ProtoMessage() {}
 
 func (x *LogoutReq) ProtoReflect() protoreflect.Message {
-	mi := &file_signaling_proto_msgTypes[8]
+	mi := &file_signaling_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +845,7 @@ func (x *LogoutReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutReq.ProtoReflect.Descriptor instead.
 func (*LogoutReq) Descriptor() ([]byte, []int) {
-	return file_signaling_proto_rawDescGZIP(), []int{8}
+	return file_signaling_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *LogoutReq) GetOperator() uint64 {
@@ -522,7 +868,20 @@ var file_signaling_proto_rawDesc = []byte{
 	0x0a, 0x0f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x12, 0x0c, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x1a,
 	0x18, 0x6c, 0x69, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x65, 0x72,
-	0x72, 0x6f, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x91, 0x01, 0x0a, 0x05, 0x53, 0x63,
+	0x72, 0x6f, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x2b, 0x0a, 0x0b, 0x43, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x1c, 0x0a, 0x03, 0x65, 0x72, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x6c, 0x69, 0x62, 0x2e, 0x45, 0x72, 0x72, 0x6f,
+	0x72, 0x52, 0x03, 0x65, 0x72, 0x72, 0x22, 0xa0, 0x01, 0x0a, 0x06, 0x4c, 0x69, 0x6e, 0x65, 0x75,
+	0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69,
+	0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64,
+	0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x14,
+	0x0a, 0x05, 0x75, 0x6e, 0x69, 0x74, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x04, 0x52, 0x05, 0x75,
+	0x6e, 0x69, 0x74, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x63, 0x61, 0x72, 0x64, 0x5f, 0x6c, 0x69, 0x62,
+	0x72, 0x61, 0x72, 0x79, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x04, 0x52, 0x0c, 0x63, 0x61, 0x72,
+	0x64, 0x4c, 0x69, 0x62, 0x72, 0x61, 0x72, 0x79, 0x73, 0x22, 0x91, 0x01, 0x0a, 0x05, 0x53, 0x63,
 	0x65, 0x6e, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x71, 0x75, 0x61, 0x72, 0x65, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x05, 0x52, 0x07, 0x73, 0x71, 0x75, 0x61, 0x72, 0x65, 0x73, 0x12, 0x1b, 0x0a,
 	0x09, 0x68, 0x61, 0x6e, 0x64, 0x5f, 0x63, 0x61, 0x72, 0x64, 0x18, 0x02, 0x20, 0x03, 0x28, 0x03,
@@ -555,37 +914,75 @@ var file_signaling_proto_rawDesc = []byte{
 	0x1c, 0x0a, 0x03, 0x65, 0x72, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x6c,
 	0x69, 0x62, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x03, 0x65, 0x72, 0x72, 0x12, 0x1d, 0x0a,
 	0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x2b, 0x0a, 0x0b,
-	0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x1c, 0x0a, 0x03, 0x65,
-	0x72, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x6c, 0x69, 0x62, 0x2e, 0x45,
-	0x72, 0x72, 0x6f, 0x72, 0x52, 0x03, 0x65, 0x72, 0x72, 0x22, 0x2a, 0x0a, 0x0c, 0x4b, 0x65, 0x65,
-	0x70, 0x41, 0x6c, 0x69, 0x76, 0x65, 0x52, 0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08, 0x6f, 0x70, 0x65,
-	0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6f, 0x70, 0x65,
-	0x72, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x3f, 0x0a, 0x09, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52,
-	0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x16,
-	0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
-	0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x32, 0x8d, 0x02, 0x0a, 0x09, 0x53, 0x69, 0x67, 0x6e, 0x61,
-	0x6c, 0x69, 0x6e, 0x67, 0x12, 0x39, 0x0a, 0x05, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x16, 0x2e,
-	0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4c, 0x6f, 0x67,
-	0x69, 0x6e, 0x52, 0x65, 0x71, 0x1a, 0x18, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e,
-	0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12,
-	0x42, 0x0a, 0x08, 0x4e, 0x65, 0x77, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x12, 0x19, 0x2e, 0x73, 0x69,
-	0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4e, 0x65, 0x77, 0x4d, 0x61,
-	0x74, 0x63, 0x68, 0x52, 0x65, 0x71, 0x1a, 0x1b, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69,
-	0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4e, 0x65, 0x77, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65,
-	0x70, 0x6c, 0x79, 0x12, 0x42, 0x0a, 0x09, 0x4b, 0x65, 0x65, 0x70, 0x41, 0x6c, 0x69, 0x76, 0x65,
-	0x12, 0x1a, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e,
-	0x4b, 0x65, 0x65, 0x70, 0x41, 0x6c, 0x69, 0x76, 0x65, 0x52, 0x65, 0x71, 0x1a, 0x19, 0x2e, 0x73,
-	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x6d,
-	0x6f, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x3d, 0x0a, 0x07, 0x4f, 0x66, 0x66, 0x6c, 0x69,
-	0x6e, 0x65, 0x12, 0x17, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70,
-	0x62, 0x2e, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52, 0x65, 0x71, 0x1a, 0x19, 0x2e, 0x73, 0x69,
-	0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f,
-	0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x42, 0x2a, 0x5a, 0x28, 0x73, 0x64, 0x6d, 0x68, 0x74, 0x2f,
-	0x73, 0x64, 0x6d, 0x68, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c,
-	0x69, 0x6e, 0x67, 0x5f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69,
-	0x6e, 0x67, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x04, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x3c, 0x0a, 0x0c,
+	0x4e, 0x65, 0x77, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x65, 0x71, 0x12, 0x2c, 0x0a, 0x06,
+	0x6c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73,
+	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4c, 0x69, 0x6e, 0x65,
+	0x75, 0x70, 0x52, 0x06, 0x6c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x22, 0x2e, 0x0a, 0x0d, 0x46, 0x69,
+	0x6e, 0x64, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x65, 0x71, 0x12, 0x1d, 0x0a, 0x0a, 0x61,
+	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x75, 0x0a, 0x0f, 0x46, 0x69,
+	0x6e, 0x64, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x1c, 0x0a,
+	0x03, 0x65, 0x72, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x6c, 0x69, 0x62,
+	0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x03, 0x65, 0x72, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61,
+	0x6c, 0x12, 0x2e, 0x0a, 0x07, 0x6c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x73, 0x18, 0x03, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70,
+	0x62, 0x2e, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x07, 0x6c, 0x69, 0x6e, 0x65, 0x75, 0x70,
+	0x73, 0x22, 0x3f, 0x0a, 0x0f, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x75,
+	0x70, 0x52, 0x65, 0x71, 0x12, 0x2c, 0x0a, 0x06, 0x6c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67,
+	0x5f, 0x70, 0x62, 0x2e, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x06, 0x6c, 0x69, 0x6e, 0x65,
+	0x75, 0x70, 0x22, 0x40, 0x0a, 0x0f, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4c, 0x69, 0x6e, 0x65,
+	0x75, 0x70, 0x52, 0x65, 0x71, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
+	0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x49, 0x64, 0x22, 0x2a, 0x0a, 0x0c, 0x4b, 0x65, 0x65, 0x70, 0x41, 0x6c, 0x69, 0x76,
+	0x65, 0x52, 0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72,
+	0x22, 0x3f, 0x0a, 0x09, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52, 0x65, 0x71, 0x12, 0x1a, 0x0a,
+	0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61,
+	0x73, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f,
+	0x6e, 0x32, 0xaf, 0x04, 0x0a, 0x09, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x12,
+	0x39, 0x0a, 0x05, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x16, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71,
+	0x1a, 0x18, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e,
+	0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x42, 0x0a, 0x09, 0x4e, 0x65,
+	0x77, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x12, 0x1a, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c,
+	0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4e, 0x65, 0x77, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70,
+	0x52, 0x65, 0x71, 0x1a, 0x19, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f,
+	0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x48,
+	0x0a, 0x0a, 0x46, 0x69, 0x6e, 0x64, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x12, 0x1b, 0x2e, 0x73,
+	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x46, 0x69, 0x6e, 0x64,
+	0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x65, 0x71, 0x1a, 0x1d, 0x2e, 0x73, 0x69, 0x67, 0x6e,
+	0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x46, 0x69, 0x6e, 0x64, 0x4c, 0x69, 0x6e,
+	0x65, 0x75, 0x70, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x48, 0x0a, 0x0c, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x12, 0x1d, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4c, 0x69,
+	0x6e, 0x65, 0x75, 0x70, 0x52, 0x65, 0x71, 0x1a, 0x19, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c,
+	0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x70,
+	0x6c, 0x79, 0x12, 0x48, 0x0a, 0x0c, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4c, 0x69, 0x6e, 0x65,
+	0x75, 0x70, 0x12, 0x1d, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70,
+	0x62, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x75, 0x70, 0x52, 0x65,
+	0x71, 0x1a, 0x19, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62,
+	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x42, 0x0a, 0x08,
+	0x4e, 0x65, 0x77, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x12, 0x19, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4e, 0x65, 0x77, 0x4d, 0x61, 0x74, 0x63, 0x68,
+	0x52, 0x65, 0x71, 0x1a, 0x1b, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f,
+	0x70, 0x62, 0x2e, 0x4e, 0x65, 0x77, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x70, 0x6c, 0x79,
+	0x12, 0x42, 0x0a, 0x09, 0x4b, 0x65, 0x65, 0x70, 0x41, 0x6c, 0x69, 0x76, 0x65, 0x12, 0x1a, 0x2e,
+	0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4b, 0x65, 0x65,
+	0x70, 0x41, 0x6c, 0x69, 0x76, 0x65, 0x52, 0x65, 0x71, 0x1a, 0x19, 0x2e, 0x73, 0x69, 0x67, 0x6e,
+	0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52,
+	0x65, 0x70, 0x6c, 0x79, 0x12, 0x3d, 0x0a, 0x07, 0x4f, 0x66, 0x66, 0x6c, 0x69, 0x6e, 0x65, 0x12,
+	0x17, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x4c,
+	0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52, 0x65, 0x71, 0x1a, 0x19, 0x2e, 0x73, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65,
+	0x70, 0x6c, 0x79, 0x42, 0x2a, 0x5a, 0x28, 0x73, 0x64, 0x6d, 0x68, 0x74, 0x2f, 0x73, 0x64, 0x6d,
+	0x68, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67,
+	0x5f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -600,38 +997,56 @@ func file_signaling_proto_rawDescGZIP() []byte {
 	return file_signaling_proto_rawDescData
 }
 
-var file_signaling_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_signaling_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_signaling_proto_goTypes = []interface{}{
-	(*Scene)(nil),         // 0: signaling_pb.Scene
-	(*Player)(nil),        // 1: signaling_pb.Player
-	(*NewMatchReq)(nil),   // 2: signaling_pb.NewMatchReq
-	(*NewMatchReply)(nil), // 3: signaling_pb.NewMatchReply
-	(*LoginReq)(nil),      // 4: signaling_pb.LoginReq
-	(*LoginReply)(nil),    // 5: signaling_pb.LoginReply
-	(*CommonReply)(nil),   // 6: signaling_pb.CommonReply
-	(*KeepAliveReq)(nil),  // 7: signaling_pb.KeepAliveReq
-	(*LogoutReq)(nil),     // 8: signaling_pb.LogoutReq
-	(*error1.Error)(nil),  // 9: lib.Error
+	(*CommonReply)(nil),     // 0: signaling_pb.CommonReply
+	(*Lineup)(nil),          // 1: signaling_pb.Lineup
+	(*Scene)(nil),           // 2: signaling_pb.Scene
+	(*Player)(nil),          // 3: signaling_pb.Player
+	(*NewMatchReq)(nil),     // 4: signaling_pb.NewMatchReq
+	(*NewMatchReply)(nil),   // 5: signaling_pb.NewMatchReply
+	(*LoginReq)(nil),        // 6: signaling_pb.LoginReq
+	(*LoginReply)(nil),      // 7: signaling_pb.LoginReply
+	(*NewLineupReq)(nil),    // 8: signaling_pb.NewLineupReq
+	(*FindLineupReq)(nil),   // 9: signaling_pb.FindLineupReq
+	(*FindLineupReply)(nil), // 10: signaling_pb.FindLineupReply
+	(*UpdateLineupReq)(nil), // 11: signaling_pb.UpdateLineupReq
+	(*DeleteLineupReq)(nil), // 12: signaling_pb.DeleteLineupReq
+	(*KeepAliveReq)(nil),    // 13: signaling_pb.KeepAliveReq
+	(*LogoutReq)(nil),       // 14: signaling_pb.LogoutReq
+	(*error1.Error)(nil),    // 15: lib.Error
 }
 var file_signaling_proto_depIdxs = []int32{
-	0, // 0: signaling_pb.Player.scene:type_name -> signaling_pb.Scene
-	9, // 1: signaling_pb.NewMatchReply.err:type_name -> lib.Error
-	1, // 2: signaling_pb.NewMatchReply.player:type_name -> signaling_pb.Player
-	9, // 3: signaling_pb.LoginReply.err:type_name -> lib.Error
-	9, // 4: signaling_pb.CommonReply.err:type_name -> lib.Error
-	4, // 5: signaling_pb.Signaling.Login:input_type -> signaling_pb.LoginReq
-	2, // 6: signaling_pb.Signaling.NewMatch:input_type -> signaling_pb.NewMatchReq
-	7, // 7: signaling_pb.Signaling.KeepAlive:input_type -> signaling_pb.KeepAliveReq
-	8, // 8: signaling_pb.Signaling.Offline:input_type -> signaling_pb.LogoutReq
-	5, // 9: signaling_pb.Signaling.Login:output_type -> signaling_pb.LoginReply
-	3, // 10: signaling_pb.Signaling.NewMatch:output_type -> signaling_pb.NewMatchReply
-	6, // 11: signaling_pb.Signaling.KeepAlive:output_type -> signaling_pb.CommonReply
-	6, // 12: signaling_pb.Signaling.Offline:output_type -> signaling_pb.CommonReply
-	9, // [9:13] is the sub-list for method output_type
-	5, // [5:9] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	15, // 0: signaling_pb.CommonReply.err:type_name -> lib.Error
+	2,  // 1: signaling_pb.Player.scene:type_name -> signaling_pb.Scene
+	15, // 2: signaling_pb.NewMatchReply.err:type_name -> lib.Error
+	3,  // 3: signaling_pb.NewMatchReply.player:type_name -> signaling_pb.Player
+	15, // 4: signaling_pb.LoginReply.err:type_name -> lib.Error
+	1,  // 5: signaling_pb.NewLineupReq.lineup:type_name -> signaling_pb.Lineup
+	15, // 6: signaling_pb.FindLineupReply.err:type_name -> lib.Error
+	1,  // 7: signaling_pb.FindLineupReply.lineups:type_name -> signaling_pb.Lineup
+	1,  // 8: signaling_pb.UpdateLineupReq.lineup:type_name -> signaling_pb.Lineup
+	6,  // 9: signaling_pb.Signaling.Login:input_type -> signaling_pb.LoginReq
+	8,  // 10: signaling_pb.Signaling.NewLineup:input_type -> signaling_pb.NewLineupReq
+	9,  // 11: signaling_pb.Signaling.FindLineup:input_type -> signaling_pb.FindLineupReq
+	11, // 12: signaling_pb.Signaling.UpdateLineup:input_type -> signaling_pb.UpdateLineupReq
+	12, // 13: signaling_pb.Signaling.DeleteLineup:input_type -> signaling_pb.DeleteLineupReq
+	4,  // 14: signaling_pb.Signaling.NewMatch:input_type -> signaling_pb.NewMatchReq
+	13, // 15: signaling_pb.Signaling.KeepAlive:input_type -> signaling_pb.KeepAliveReq
+	14, // 16: signaling_pb.Signaling.Offline:input_type -> signaling_pb.LogoutReq
+	7,  // 17: signaling_pb.Signaling.Login:output_type -> signaling_pb.LoginReply
+	0,  // 18: signaling_pb.Signaling.NewLineup:output_type -> signaling_pb.CommonReply
+	10, // 19: signaling_pb.Signaling.FindLineup:output_type -> signaling_pb.FindLineupReply
+	0,  // 20: signaling_pb.Signaling.UpdateLineup:output_type -> signaling_pb.CommonReply
+	0,  // 21: signaling_pb.Signaling.DeleteLineup:output_type -> signaling_pb.CommonReply
+	5,  // 22: signaling_pb.Signaling.NewMatch:output_type -> signaling_pb.NewMatchReply
+	0,  // 23: signaling_pb.Signaling.KeepAlive:output_type -> signaling_pb.CommonReply
+	0,  // 24: signaling_pb.Signaling.Offline:output_type -> signaling_pb.CommonReply
+	17, // [17:25] is the sub-list for method output_type
+	9,  // [9:17] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_signaling_proto_init() }
@@ -641,78 +1056,6 @@ func file_signaling_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_signaling_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Scene); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_signaling_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Player); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_signaling_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewMatchReq); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_signaling_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewMatchReply); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_signaling_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LoginReq); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_signaling_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LoginReply); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_signaling_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommonReply); i {
 			case 0:
 				return &v.state
@@ -724,8 +1067,80 @@ func file_signaling_proto_init() {
 				return nil
 			}
 		}
+		file_signaling_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Lineup); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Scene); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Player); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NewMatchReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NewMatchReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*LoginReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 		file_signaling_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KeepAliveReq); i {
+			switch v := v.(*LoginReply); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -737,6 +1152,78 @@ func file_signaling_proto_init() {
 			}
 		}
 		file_signaling_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NewLineupReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindLineupReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindLineupReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateLineupReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteLineupReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*KeepAliveReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signaling_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogoutReq); i {
 			case 0:
 				return &v.state
@@ -755,7 +1242,7 @@ func file_signaling_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_signaling_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

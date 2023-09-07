@@ -6,14 +6,14 @@ const (
 )
 
 type Lineup struct {
-	ID              uint64   `db:"id"`
-	AccountID       uint64   `db:"account_id"`
-	Name            string   `db:"name"`
-	Enabled         bool     `db:"enabled"`
-	Units           []uint64 `db:"-"`
-	CardLibrarys    []uint64 `db:"-"`
-	UnitsStr        string   `db:"units"`
-	CardLibrarysStr string   `db:"card_library"`
+	ID              uint64   `json:"id" db:"id"`
+	AccountID       uint64   `json:"account_id" db:"account_id"`
+	Name            string   `json:"name" db:"name"`
+	Enabled         bool     `json:"-" db:"enabled"`
+	Units           []uint64 `json:"units" db:"-"`
+	CardLibrarys    []uint64 `json:"card_librarys" db:"-"`
+	UnitsStr        string   `json:"-" db:"units"`
+	CardLibrarysStr string   `json:"-" db:"card_library"`
 }
 
 type LineupQuery struct {

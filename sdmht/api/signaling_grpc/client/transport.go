@@ -4,35 +4,10 @@ import (
 	"context"
 
 	"sdmht/lib"
+	grpc "sdmht/sdmht/api/signaling_grpc"
 	pb "sdmht/sdmht/api/signaling_grpc/signaling_pb"
 	"sdmht/sdmht/svc/entity"
 )
-
-func fromPBScene(in *pb.Scene) (out *entity.Scene) {
-	if in == nil {
-		return (*entity.Scene)(nil)
-	}
-	out = &entity.Scene{
-		Squares:           [16]int32{},
-		HandCard:          [10]int64{},
-		CardLibrary:       [20]int64{},
-		DrawCardCountDown: in.DrawCardCountdown,
-	}
-	_ = copy(out.Squares[:], in.Squares)
-	_ = copy(out.HandCard[:], in.HandCard)
-	_ = copy(out.CardLibrary[:], in.CardLibrary)
-	return out
-}
-
-func fromPBPlayer(in *pb.Player) (out *entity.Player) {
-	if in == nil {
-		return (*entity.Player)(nil)
-	}
-	return &entity.Player{
-		ID:    in.Id,
-		Scene: fromPBScene(in.Scene),
-	}
-}
 
 func enLoginReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.LoginReq)
@@ -41,7 +16,6 @@ func enLoginReq(_ context.Context, request interface{}) (interface{}, error) {
 		WechatId: req.WeChatID,
 	}, nil
 }
-
 func deLoginReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(*pb.LoginReply)
 	if r.GetErr() != nil {
@@ -52,6 +26,49 @@ func deLoginReply(_ context.Context, response interface{}) (interface{}, error) 
 	}, nil
 }
 
+func enNewLineupReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.NewLineupReq)
+	return &pb.NewLineupReq{
+		Lineup: grpc.ToPBLineup(&req.Lineup),
+	}, nil
+}
+
+func enFindLineupReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.FindLineupReq)
+	return &pb.FindLineupReq{
+		AccountId: req.AccountID,
+	}, nil
+}
+func deFindLineupReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(*pb.FindLineupReply)
+	if r.GetErr() != nil {
+		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
+	}
+
+	res := &entity.FindLineupRes{
+		Total: int(r.Total),
+	}
+	for _, lineup := range r.Lineups {
+		res.Lineups = append(res.Lineups, grpc.FromPBLineup(lineup))
+	}
+	return res, nil
+}
+
+func enUpdateLineupReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.UpdateLineupReq)
+	return &pb.UpdateLineupReq{
+		Lineup: grpc.ToPBLineup(&req.Lineup),
+	}, nil
+}
+
+func enDeleteLineupReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.DeleteLineupReq)
+	return &pb.DeleteLineupReq{
+		Id:        req.ID,
+		AccountId: req.AccountID,
+	}, nil
+}
+
 func enNewMatchReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.NewMatchReq)
 	return &pb.NewMatchReq{
@@ -59,14 +76,13 @@ func enNewMatchReq(_ context.Context, request interface{}) (interface{}, error) 
 		CardConfig: req.CardConfig,
 	}, nil
 }
-
 func deNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(*pb.NewMatchReply)
 	if r.GetErr() != nil {
 		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
 	}
 	return &entity.NewMatchRes{
-		Player: fromPBPlayer(r.Player),
+		Player: grpc.FromPBPlayer(r.Player),
 	}, nil
 }
 

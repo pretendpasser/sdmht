@@ -26,6 +26,7 @@ type Client struct {
 	addr      string
 	sn        int
 	accountID uint64
+	wechatID  string
 
 	serverStartTime   time.Time
 	loginTime         time.Time // 用于客户端重登时，pocmng可能有过去的消息，刚发过来，此时可以判断时间做废弃
@@ -192,23 +193,48 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 		}
 		log.S().Infow("client login res", "res", res, "AccountID", res.AccountID)
 		now := time.Now()
-		c.SetInfo(res.AccountID)
+		c.SetInfo(res.AccountID, req.WeChatID)
 		c.SetLoginTime(now)
 		c.SetLastHeartBeatTime()
 		c.notifyClientEvent <- NewClientEvent(ClientEventTypeAdd, c.AccountID(), c)
 		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", res)
-	// case webinar_entity.MsgTypeGetEvents:
-	// 	content := payload.MsgContent.(*webinar_entity.FindRelatedEventReq)
-	// 	content.StartTime = utils.TimestampToTime(content.Begin)
-	// 	content.EndTime = utils.TimestampToTime(content.End)
-	// 	content.Operator = c.AccountID
-	// 	resp, err1 := c.webinarMng.FindRelatedEvent(ctx, *content)
-	// 	if err1 != nil {
-	// 		err = err1
-	// 		break
-	// 	}
-	// 	slog(ctx).Infow("find related event resp", "resp", resp)
-	// 	ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", resp)
+	case sdmht_entity.MsgTypeNewLineup:
+		content := payload.MsgContent.(*sdmht_entity.NewLineupReq)
+		content.AccountID = c.AccountID()
+		err1 := c.connMng.NewLineup(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", sdmht_entity.CommonRes{})
+	case sdmht_entity.MsgTypeFindLineup:
+		content := payload.MsgContent.(*sdmht_entity.FindLineupReq)
+		content.AccountID = c.AccountID()
+		res, err1 := c.connMng.FindLineup(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		slog(ctx).Infow("find lineup res", "res", res)
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", res)
+	case sdmht_entity.MsgTypeUpdateLineup:
+		content := payload.MsgContent.(*sdmht_entity.UpdateLineupReq)
+		content.AccountID = c.AccountID()
+		err1 := c.connMng.UpdateLineup(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", sdmht_entity.CommonRes{})
+	case sdmht_entity.MsgTypeDeleteLineup:
+		content := payload.MsgContent.(*sdmht_entity.DeleteLineupReq)
+		content.AccountID = c.AccountID()
+		err1 := c.connMng.DeleteLineup(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", sdmht_entity.CommonRes{})
 	// case webinar_entity.MsgTypeJoinEvent:
 	// 	content := payload.MsgContent.(*webinar_entity.JoinEventReq)
 	// 	content.Operator = c.AccountID
@@ -253,7 +279,7 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 		if err != nil {
 			break
 		}
-		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", sdmht_entity.CommonResp{})
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", sdmht_entity.CommonRes{})
 	}
 
 	if err != nil {
@@ -324,10 +350,11 @@ func (c *Client) LoggedIn() bool {
 	return c.loginTime != time.Time{}
 }
 
-func (c *Client) SetInfo(AccountID uint64) {
+func (c *Client) SetInfo(accountID uint64, wechatID string) {
 	c.rwLock.Lock()
 	defer c.rwLock.Unlock()
-	c.accountID = AccountID
+	c.accountID = accountID
+	c.wechatID = wechatID
 }
 
 func (c *Client) AccountID() uint64 {

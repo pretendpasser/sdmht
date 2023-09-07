@@ -15,6 +15,10 @@ type Service interface {
 }
 type SignalingService interface {
 	Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error)
+	NewLineup(ctx context.Context, req *entity.NewLineupReq) error
+	FindLineup(ctx context.Context, req *entity.FindLineupReq) (*entity.FindLineupRes, error)
+	UpdateLineup(ctx context.Context, req *entity.UpdateLineupReq) error
+	DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error
 
 	KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error
 	Offline(ctx context.Context, req *entity.LogoutReq) error

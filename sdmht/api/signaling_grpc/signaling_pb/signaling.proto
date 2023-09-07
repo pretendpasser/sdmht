@@ -8,9 +8,26 @@ import "lib/protobuf/error.proto";
 
 service Signaling {
     rpc Login(LoginReq) returns (LoginReply);
+    rpc NewLineup(NewLineupReq) returns (CommonReply);
+    rpc FindLineup(FindLineupReq) returns (FindLineupReply);
+    rpc UpdateLineup(UpdateLineupReq) returns (CommonReply);
+    rpc DeleteLineup(DeleteLineupReq) returns (CommonReply);
     rpc NewMatch(NewMatchReq) returns (NewMatchReply);
     rpc KeepAlive(KeepAliveReq) returns (CommonReply);
     rpc Offline(LogoutReq) returns (CommonReply);
+}
+
+message CommonReply {
+    lib.Error err = 1;
+}
+
+message Lineup {
+    uint64 id = 1;
+    uint64 account_id = 2;
+    string name = 3;
+    bool enabled = 4;
+    repeated uint64 units = 5;
+    repeated uint64 card_librarys = 6; 
 }
 
 message Scene {
@@ -29,7 +46,6 @@ message NewMatchReq {
     uint64 operator = 1;
     uint64 card_config = 2;
 }
-
 message NewMatchReply {
     lib.Error err = 1;
     Player player = 2;
@@ -40,14 +56,31 @@ message LoginReq {
     string wechat_id = 1;
     string user_name = 2;
 }
-
 message LoginReply {
     lib.Error err = 1;
     uint64 account_id = 2;
 }
 
-message CommonReply {
+message NewLineupReq {
+    Lineup lineup = 1;
+}
+
+message FindLineupReq {
+    uint64 account_id = 1;
+}
+message FindLineupReply {
     lib.Error err = 1;
+    int32 total = 2;
+    repeated Lineup lineups = 3;
+}
+
+message UpdateLineupReq {
+    Lineup lineup = 1;
+}
+
+message DeleteLineupReq {
+    uint64 id = 1;
+    uint64 account_id = 2;
 }
 
 message KeepAliveReq {

@@ -14,6 +14,27 @@ type LoginRes struct {
 	AccountID uint64
 }
 
+type NewLineupReq struct {
+	Lineup
+}
+
+type FindLineupReq struct {
+	AccountID uint64
+}
+type FindLineupRes struct {
+	Total   int
+	Lineups []*Lineup `json:"lineups"`
+}
+
+type UpdateLineupReq struct {
+	Lineup
+}
+
+type DeleteLineupReq struct {
+	ID        uint64
+	AccountID uint64
+}
+
 type NewMatchReq struct {
 	Operator   uint64 `json:"operator"`
 	CardConfig uint64 `json:"card_config"`

@@ -23,12 +23,23 @@ func NewService(lineupRepo itfs.LineupRepo) *service {
 }
 
 func (s *service) CreateLineup(ctx context.Context, lineup *entity.Lineup) error {
+	if lineup.AccountID == 0 {
+		operater, ok := mw.GetAccountIDFromContext(ctx)
+		if !ok {
+			log.S().Error("get operator fail when update event")
+			return lib.NewError(lib.ErrInternal, "get account id fail")
+		}
+		lineup.AccountID = operater
+	}
+
 	if len(lineup.Units) > 3 || len(lineup.CardLibrarys) > entity.MaxCardLibrary {
 		return lib.NewError(lib.ErrInvalidArgument, "numbers of units or cards is over max")
 	}
-
 	if len(lineup.Units) < 3 || len(lineup.CardLibrarys) < entity.MaxCardLibrary {
 		lineup.Enabled = false
+	}
+	if lineup.Name == "" {
+		lineup.Name = "自定义卡组"
 	}
 
 	err := s.lineupRepo.Create(ctx, lineup)
@@ -77,12 +88,24 @@ func (s *service) GetLineup(ctx context.Context, id uint64, accountID uint64) (*
 }
 
 func (s *service) UpdateLineup(ctx context.Context, lineup *entity.Lineup) error {
-	operater, ok := mw.GetAccountIDFromContext(ctx)
-	if !ok {
-		log.S().Error("get operator fail when update event")
-		return lib.NewError(lib.ErrInternal, "get account id fail")
+	if lineup.AccountID == 0 {
+		operater, ok := mw.GetAccountIDFromContext(ctx)
+		if !ok {
+			log.S().Error("get operator fail when update event")
+			return lib.NewError(lib.ErrInternal, "get account id fail")
+		}
+		lineup.AccountID = operater
 	}
-	lineup.AccountID = operater
+
+	if len(lineup.Units) > 3 || len(lineup.CardLibrarys) > entity.MaxCardLibrary {
+		return lib.NewError(lib.ErrInvalidArgument, "numbers of units or cards is over max")
+	}
+	if len(lineup.Units) < 3 || len(lineup.CardLibrarys) < entity.MaxCardLibrary {
+		lineup.Enabled = false
+	}
+	if lineup.Name == "" {
+		lineup.Name = "自定义卡组"
+	}
 
 	err := s.lineupRepo.Update(ctx, lineup)
 	if err != nil {

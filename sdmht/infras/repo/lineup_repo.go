@@ -141,7 +141,6 @@ func (r *lineupRepo) Update(ctx context.Context, lineup *entity.Lineup) error {
 	}
 
 	mset := make(map[string]interface{})
-	mset["account_id"] = lineup.AccountID
 	mset["name"] = lineup.Name
 	mset["units"] = lineup.UnitsStr
 	mset["card_library"] = lineup.CardLibrarysStr

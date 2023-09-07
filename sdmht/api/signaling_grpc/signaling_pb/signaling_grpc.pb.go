@@ -19,6 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SignalingClient interface {
 	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginReply, error)
+	NewLineup(ctx context.Context, in *NewLineupReq, opts ...grpc.CallOption) (*CommonReply, error)
+	FindLineup(ctx context.Context, in *FindLineupReq, opts ...grpc.CallOption) (*FindLineupReply, error)
+	UpdateLineup(ctx context.Context, in *UpdateLineupReq, opts ...grpc.CallOption) (*CommonReply, error)
+	DeleteLineup(ctx context.Context, in *DeleteLineupReq, opts ...grpc.CallOption) (*CommonReply, error)
 	NewMatch(ctx context.Context, in *NewMatchReq, opts ...grpc.CallOption) (*NewMatchReply, error)
 	KeepAlive(ctx context.Context, in *KeepAliveReq, opts ...grpc.CallOption) (*CommonReply, error)
 	Offline(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*CommonReply, error)
@@ -35,6 +39,42 @@ func NewSignalingClient(cc grpc.ClientConnInterface) SignalingClient {
 func (c *signalingClient) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginReply, error) {
 	out := new(LoginReply)
 	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *signalingClient) NewLineup(ctx context.Context, in *NewLineupReq, opts ...grpc.CallOption) (*CommonReply, error) {
+	out := new(CommonReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/NewLineup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *signalingClient) FindLineup(ctx context.Context, in *FindLineupReq, opts ...grpc.CallOption) (*FindLineupReply, error) {
+	out := new(FindLineupReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/FindLineup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *signalingClient) UpdateLineup(ctx context.Context, in *UpdateLineupReq, opts ...grpc.CallOption) (*CommonReply, error) {
+	out := new(CommonReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/UpdateLineup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *signalingClient) DeleteLineup(ctx context.Context, in *DeleteLineupReq, opts ...grpc.CallOption) (*CommonReply, error) {
+	out := new(CommonReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/DeleteLineup", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +113,10 @@ func (c *signalingClient) Offline(ctx context.Context, in *LogoutReq, opts ...gr
 // for forward compatibility
 type SignalingServer interface {
 	Login(context.Context, *LoginReq) (*LoginReply, error)
+	NewLineup(context.Context, *NewLineupReq) (*CommonReply, error)
+	FindLineup(context.Context, *FindLineupReq) (*FindLineupReply, error)
+	UpdateLineup(context.Context, *UpdateLineupReq) (*CommonReply, error)
+	DeleteLineup(context.Context, *DeleteLineupReq) (*CommonReply, error)
 	NewMatch(context.Context, *NewMatchReq) (*NewMatchReply, error)
 	KeepAlive(context.Context, *KeepAliveReq) (*CommonReply, error)
 	Offline(context.Context, *LogoutReq) (*CommonReply, error)
@@ -85,6 +129,18 @@ type UnimplementedSignalingServer struct {
 
 func (UnimplementedSignalingServer) Login(context.Context, *LoginReq) (*LoginReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedSignalingServer) NewLineup(context.Context, *NewLineupReq) (*CommonReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewLineup not implemented")
+}
+func (UnimplementedSignalingServer) FindLineup(context.Context, *FindLineupReq) (*FindLineupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindLineup not implemented")
+}
+func (UnimplementedSignalingServer) UpdateLineup(context.Context, *UpdateLineupReq) (*CommonReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateLineup not implemented")
+}
+func (UnimplementedSignalingServer) DeleteLineup(context.Context, *DeleteLineupReq) (*CommonReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteLineup not implemented")
 }
 func (UnimplementedSignalingServer) NewMatch(context.Context, *NewMatchReq) (*NewMatchReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewMatch not implemented")
@@ -122,6 +178,78 @@ func _Signaling_Login_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SignalingServer).Login(ctx, req.(*LoginReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Signaling_NewLineup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewLineupReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).NewLineup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/signaling_pb.Signaling/NewLineup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).NewLineup(ctx, req.(*NewLineupReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Signaling_FindLineup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindLineupReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).FindLineup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/signaling_pb.Signaling/FindLineup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).FindLineup(ctx, req.(*FindLineupReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Signaling_UpdateLineup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateLineupReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).UpdateLineup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/signaling_pb.Signaling/UpdateLineup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).UpdateLineup(ctx, req.(*UpdateLineupReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Signaling_DeleteLineup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteLineupReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).DeleteLineup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/signaling_pb.Signaling/DeleteLineup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).DeleteLineup(ctx, req.(*DeleteLineupReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -190,6 +318,22 @@ var Signaling_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Signaling_Login_Handler,
+		},
+		{
+			MethodName: "NewLineup",
+			Handler:    _Signaling_NewLineup_Handler,
+		},
+		{
+			MethodName: "FindLineup",
+			Handler:    _Signaling_FindLineup_Handler,
+		},
+		{
+			MethodName: "UpdateLineup",
+			Handler:    _Signaling_UpdateLineup_Handler,
+		},
+		{
+			MethodName: "DeleteLineup",
+			Handler:    _Signaling_DeleteLineup_Handler,
 		},
 		{
 			MethodName: "NewMatch",

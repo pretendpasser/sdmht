@@ -69,7 +69,8 @@ func (s *signalingSvc) Login(ctx context.Context, req *entity.LoginReq) (*entity
 		return nil, err
 	}
 
-	if err := s.connManger.User2ConnRepo().Add(ctx, res.Account.ID, res.Account.WeChatID); err != nil {
+	err = s.connManger.User2ConnRepo().Add(ctx, res.Account.ID, res.Account.WeChatID)
+	if err != nil {
 		log.S().Errorw("Login: add user client fail", "err", err)
 		return nil, err
 	}
@@ -79,26 +80,59 @@ func (s *signalingSvc) Login(ctx context.Context, req *entity.LoginReq) (*entity
 	}, nil
 }
 
+func (s *signalingSvc) NewLineup(ctx context.Context, req *entity.NewLineupReq) error {
+	if len(req.Units) > 3 || len(req.CardLibrarys) > entity.MaxCardLibrary {
+		return lib.NewError(lib.ErrInvalidArgument, "numbers of units or cards is over max")
+	}
+
+	err := s.eventSvc.CreateLineup(ctx, &req.Lineup)
+	if err != nil {
+		log.S().Errorw("NewLineup: new lineup fail", "err", err)
+		return err
+	}
+	return nil
+}
+
+func (s *signalingSvc) FindLineup(ctx context.Context, req *entity.FindLineupReq) (*entity.FindLineupRes, error) {
+	total, lineups, err := s.eventSvc.FindLineup(ctx, &entity.LineupQuery{FilterByAccountID: req.AccountID})
+	if err != nil {
+		log.S().Errorw("FindLineup: find lineup fail", "err", err)
+		return nil, err
+	}
+
+	return &entity.FindLineupRes{
+		Lineups: lineups,
+		Total:   total,
+	}, nil
+}
+
+func (s *signalingSvc) UpdateLineup(ctx context.Context, req *entity.UpdateLineupReq) error {
+	if len(req.Units) > 3 || len(req.CardLibrarys) > entity.MaxCardLibrary {
+		return lib.NewError(lib.ErrInvalidArgument, "numbers of units or cards is over max")
+	}
+
+	err := s.eventSvc.UpdateLineup(ctx, &req.Lineup)
+	if err != nil {
+		log.S().Errorw("UpdateLineup: update lineup fail", "err", err)
+		return err
+	}
+	return nil
+}
+
+func (s *signalingSvc) DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error {
+	err := s.eventSvc.DeleteLineup(ctx, req.ID, req.AccountID)
+	if err != nil {
+		log.S().Errorw("DeleteLineup: delete lineup fail", "err", err)
+		return err
+	}
+	return nil
+}
+
 func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
 	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
 	slog.Infow("KeepAlive:Req", "params", req)
 	// return s.repo.Update(ctx, 0, req.Operator, "status", entity.UserOnline)
 	return nil
-}
-
-func (s *signalingSvc) Offline(ctx context.Context, req *entity.LogoutReq) error {
-	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
-	slog.Infow("Offline:Req", "params", req)
-
-	// info, err := s.repo.Get(ctx, 0, req.Operator)
-	// if err != nil {
-	// 	slog.Errorw("Offline:GetJoinedEvent", "params", req, "err", err)
-	// 	return err
-	// }
-
-	// return s.LeaveEvent(ctx, entity.LeaveEventReq{Operator: req.Operator, EventID: info.EventID})
-	return nil
-
 }
 
 func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error) {
@@ -119,3 +153,17 @@ func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*
 // 	res.MatchID = newMatchID
 // 	return res, nil
 // }
+
+func (s *signalingSvc) Offline(ctx context.Context, req *entity.LogoutReq) error {
+	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
+	slog.Infow("Offline:Req", "params", req)
+
+	// info, err := s.repo.Get(ctx, 0, req.Operator)
+	// if err != nil {
+	// 	slog.Errorw("Offline:GetJoinedEvent", "params", req, "err", err)
+	// 	return err
+	// }
+
+	// return s.LeaveEvent(ctx, entity.LeaveEventReq{Operator: req.Operator, EventID: info.EventID})
+	return nil
+}

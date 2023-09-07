@@ -9,7 +9,6 @@ import (
 	itfs "sdmht/sdmht/svc/interfaces"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/go-kit/kit/tracing/zipkin"
 	"github.com/go-kit/kit/transport"
 	"github.com/go-kit/kit/transport/grpc"
 )
@@ -20,27 +19,31 @@ var _ pb.SignalingServer = (*grpcServer)(nil)
 type grpcServer struct {
 	*pb.UnimplementedSignalingServer
 
-	LoginHandler     grpc.Handler
-	NewMatchHandler  grpc.Handler
-	KeepAliveHandler grpc.Handler
-	OfflineHandler   grpc.Handler
+	LoginHandler        grpc.Handler
+	NewLineupHandler    grpc.Handler
+	FindLineupHandler   grpc.Handler
+	UpdateLineupHandler grpc.Handler
+	DeleteLineupHandler grpc.Handler
+	NewMatchHandler     grpc.Handler
+	KeepAliveHandler    grpc.Handler
+	OfflineHandler      grpc.Handler
 }
 
 func NewGRPCServer(svc itfs.SignalingService, opts *kitx.ServerOptions) pb.SignalingServer {
 	srv := &grpcServer{}
 
 	logger := opts.Logger()
-	tracer := opts.ZipkinTracer()
 
 	options := []grpc.ServerOption{
 		grpc.ServerBefore(opts.MetadataToCtx("sdmht")),
 		grpc.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 	}
-	if tracer != nil {
-		options = append(options, zipkin.GRPCServerTrace(tracer))
-	}
 
 	srv.LoginHandler = makeLoginHandler(svc, options, opts)
+	srv.NewLineupHandler = makeNewLineupHandler(svc, options, opts)
+	srv.FindLineupHandler = makeFindLineupHandler(svc, options, opts)
+	srv.UpdateLineupHandler = makeUpdateLineupHandler(svc, options, opts)
+	srv.DeleteLineupHandler = makeDeleteLineupHandler(svc, options, opts)
 	srv.NewMatchHandler = makeNewMatchHandler(svc, options, opts)
 	srv.KeepAliveHandler = makeKeepAliveHandler(svc, options, opts)
 	srv.OfflineHandler = makeOfflineHandler(svc, options, opts)
@@ -87,6 +90,42 @@ func makeLoginHandler(svc itfs.SignalingService, options []grpc.ServerOption, op
 	}, opts)
 
 	return grpc.NewServer(ep, deLoginReq, enLoginReply, options...)
+}
+
+func makeNewLineupHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {
+	ep := kitx.ServerEndpoint(func() (endpoint.Endpoint, string) {
+		ep := api.MakeNewLineupEndpoint(svc)
+		return ep, "sdmht.signaling.NewLineup"
+	}, opts)
+
+	return grpc.NewServer(ep, deNewLineupReq, enCommonReply, options...)
+}
+
+func makeFindLineupHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {
+	ep := kitx.ServerEndpoint(func() (endpoint.Endpoint, string) {
+		ep := api.MakeFindLineupEndpoint(svc)
+		return ep, "sdmht.signaling.FindLineup"
+	}, opts)
+
+	return grpc.NewServer(ep, deFindLineupReq, enFindLineupReply, options...)
+}
+
+func makeUpdateLineupHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {
+	ep := kitx.ServerEndpoint(func() (endpoint.Endpoint, string) {
+		ep := api.MakeUpdateLineupEndpoint(svc)
+		return ep, "sdmht.signaling.UpdateLineup"
+	}, opts)
+
+	return grpc.NewServer(ep, deUpdateLineupReq, enCommonReply, options...)
+}
+
+func makeDeleteLineupHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {
+	ep := kitx.ServerEndpoint(func() (endpoint.Endpoint, string) {
+		ep := api.MakeDeleteLineupEndpoint(svc)
+		return ep, "sdmht.signaling.DeleteLineup"
+	}, opts)
+
+	return grpc.NewServer(ep, deDeleteLineupReq, enCommonReply, options...)
 }
 
 func makeNewMatchHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {

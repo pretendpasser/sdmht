@@ -8,12 +8,18 @@ import (
 var MsgTypes = make(map[string]interface{})
 
 const (
-	MsgTypeLogin     = "login"
-	MsgTypeNewMatch  = "new_match_request"
-	MsgTypeKeepAlive = "keep_alive_request"
+	MsgTypeLogin = "login"
+
+	MsgTypeNewLineup    = "new_lineup"
+	MsgTypeFindLineup   = "find_lineup"
+	MsgTypeUpdateLineup = "update_lineup"
+	MsgTypeDeleteLineup = "delete_lineup"
+
+	MsgTypeNewMatch  = "new_match"
+	MsgTypeKeepAlive = "keep_alive"
 )
 
-type CommonResp struct{}
+type CommonRes struct{}
 
 type ClientEvent struct {
 	UserID  uint64
@@ -30,6 +36,10 @@ type DispatchEventToClientReply struct {
 
 func init() {
 	MsgTypes[MsgTypeLogin] = LoginReq{}
+	MsgTypes[MsgTypeNewLineup] = NewLineupReq{}
+	MsgTypes[MsgTypeFindLineup] = FindLineupReq{}
+	MsgTypes[MsgTypeUpdateLineup] = UpdateLineupReq{}
+	MsgTypes[MsgTypeDeleteLineup] = DeleteLineupReq{}
 	MsgTypes[MsgTypeNewMatch] = NewMatchReq{}
 	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
 }

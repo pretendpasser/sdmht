@@ -19,10 +19,14 @@ var _ itfs.SignalingService = (*grpcClient)(nil)
 
 // grpcClient is the Go kit client implementation for interfaces.Service.
 type grpcClient struct {
-	LoginEndpoint     endpoint.Endpoint
-	NewMatchEndpoint  endpoint.Endpoint
-	KeepAliveEndpoint endpoint.Endpoint
-	OfflineEndpoint   endpoint.Endpoint
+	LoginEndpoint        endpoint.Endpoint
+	NewLineupEndpoint    endpoint.Endpoint
+	FindLineupEndpoint   endpoint.Endpoint
+	UpdateLineupEndpoint endpoint.Endpoint
+	DeleteLineupEndpoint endpoint.Endpoint
+	NewMatchEndpoint     endpoint.Endpoint
+	KeepAliveEndpoint    endpoint.Endpoint
+	OfflineEndpoint      endpoint.Endpoint
 }
 
 func (c *grpcClient) Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error) {
@@ -31,6 +35,29 @@ func (c *grpcClient) Login(ctx context.Context, req *entity.LoginReq) (*entity.L
 		return nil, err
 	}
 	return res.(*entity.LoginRes), nil
+}
+
+func (c *grpcClient) NewLineup(ctx context.Context, req *entity.NewLineupReq) error {
+	_, err := c.NewLineupEndpoint(ctx, req)
+	return err
+}
+
+func (c *grpcClient) FindLineup(ctx context.Context, req *entity.FindLineupReq) (*entity.FindLineupRes, error) {
+	res, err := c.FindLineupEndpoint(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*entity.FindLineupRes), nil
+}
+
+func (c *grpcClient) UpdateLineup(ctx context.Context, req *entity.UpdateLineupReq) error {
+	_, err := c.UpdateLineupEndpoint(ctx, req)
+	return err
+}
+
+func (c *grpcClient) DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error {
+	_, err := c.DeleteLineupEndpoint(ctx, req)
+	return err
 }
 
 func (c *grpcClient) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error) {
@@ -81,6 +108,50 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			pb.LoginReply{},
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.Login"
+	}, opts)
+	c.NewLineupEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"NewLineup",
+			enNewLineupReq,
+			deCommonReply,
+			pb.CommonReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.NewLineup"
+	}, opts)
+	c.FindLineupEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"FindLineup",
+			enFindLineupReq,
+			deFindLineupReply,
+			pb.FindLineupReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.FindLineup"
+	}, opts)
+	c.UpdateLineupEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"UpdateLineup",
+			enUpdateLineupReq,
+			deCommonReply,
+			pb.CommonReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.UpdateLineup"
+	}, opts)
+	c.DeleteLineupEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"DeleteLineup",
+			enDeleteLineupReq,
+			deCommonReply,
+			pb.CommonReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.DeleteLineup"
 	}, opts)
 	c.NewMatchEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
