@@ -77,25 +77,24 @@ func main() {
 	defer redisDB.Close()
 
 	var (
-		idGenerator = seq.New()
-	)
-
-	var (
-		lineupRepo = repo.NewLineupRepo(db)
+		idGenerator   = seq.New()
+		lineupRepo    = repo.NewLineupRepo(db)
+		unitRepo      = repo.NewUnitRepo(db)
+		matchRepo     = repo.NewMatchRepo("sdmht:match", redisDB)
+		user2ConnRepo = repo.NewUser2ConnRepo("sdmht:user2conn", redisDB)
 	)
 
 	srvOpts := kitx.NewServerOptions(kitx.WithLogger(log.GetLogger()), kitx.WithRateLimit(nil), kitx.WithCircuitBreaker(0), kitx.WithMetrics(nil), kitx.WithZipkinTracer(nil))
 	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second), kitx.WithZipkinTracer(nil))
 
-	user2ConnRepo := repo.NewUser2ConnRepo("sdmht:user2conn", redisDB)
 	connMgr := sdmht_svc.NewConnManager(user2ConnRepo, func(connName string) connitfs.ConnService {
 		instance := []string{connName}
 		return conncli.NewClient(sd.FixedInstancer(instance), cliOpts)
 	})
 
-	sdmhtSvc := sdmht_svc.NewService(lineupRepo)
+	sdmhtSvc := sdmht_svc.NewService(idGenerator, lineupRepo, unitRepo, matchRepo)
 	accountSvc := accountcli.NewClient(sd.FixedInstancer([]string{utils.GetEnvDefault("ACCOUNT_ACCESS_ADDR", "account:7001")}), cliOpts)
-	signalingSvc := sdmht_svc.NewSignalingService(idGenerator, nil, accountSvc, connMgr)
+	signalingSvc := sdmht_svc.NewSignalingService(nil, accountSvc, connMgr)
 	grpcServer := server.NewGRPCServer(signalingSvc, srvOpts)
 	grpcService := grpc.NewServer()
 	signaling_pb.RegisterSignalingServer(grpcService, grpcServer)

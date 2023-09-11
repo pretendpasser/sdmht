@@ -11,8 +11,16 @@ type UnitRepo interface {
 	Find(ctx context.Context, query *entity.UnitQuery) (int, []*entity.Unit, error)
 }
 
-type Scene interface {
-	Get()
+type MatchRepo interface {
+	New(match *entity.Match) error
+	Set(match *entity.Match)
+	Get(id uint64) (*entity.Match, error)
+	Delete(id uint64) error
+
+	RAdd(ctx context.Context, match *entity.Match) error
+	RGet(ctx context.Context, id uint64) (*entity.Match, error)
+	RUpdate(ctx context.Context, match *entity.Match) error
+	RDelete(ctx context.Context, id uint64) error
 }
 
 type LineupRepo interface {

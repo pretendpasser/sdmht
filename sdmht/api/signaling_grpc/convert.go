@@ -40,14 +40,12 @@ func FromPBScene(in *pb.Scene) (out *entity.Scene) {
 		return (*entity.Scene)(nil)
 	}
 	out = &entity.Scene{
-		Squares:           [16]int32{},
-		HandCard:          [10]int64{},
-		CardLibrary:       [20]int64{},
-		DrawCardCountDown: in.DrawCardCountdown,
+		Squares:           in.GetSquares(),
+		HandCards:         in.GetHandCards(),
+		CardLibraries:     in.GetHandCards(),
+		IsLibraryExpty:    in.GetIsLibraryExpty(),
+		DrawCardCountDown: in.GetDrawCardCountdown(),
 	}
-	_ = copy(out.Squares[:], in.Squares)
-	_ = copy(out.HandCard[:], in.HandCard)
-	_ = copy(out.CardLibrary[:], in.CardLibrary)
 	return out
 }
 func ToPBScene(in *entity.Scene) (out *pb.Scene) {
@@ -56,8 +54,9 @@ func ToPBScene(in *entity.Scene) (out *pb.Scene) {
 	}
 	return &pb.Scene{
 		Squares:           in.Squares[:],
-		HandCard:          in.HandCard[:],
-		CardLibrary:       in.CardLibrary[:],
+		HandCards:         in.HandCards[:],
+		CardLibraries:     in.CardLibraries[:],
+		IsLibraryExpty:    in.IsLibraryExpty,
 		DrawCardCountdown: in.DrawCardCountDown,
 	}
 }

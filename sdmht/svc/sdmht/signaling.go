@@ -9,7 +9,6 @@ import (
 	"sdmht/lib"
 	"sdmht/lib/kitx"
 	"sdmht/lib/log"
-	"sdmht/lib/seq"
 	"sdmht/sdmht/svc/entity"
 	itfs "sdmht/sdmht/svc/interfaces"
 )
@@ -30,22 +29,19 @@ const (
 var _ itfs.SignalingService = (*signalingSvc)(nil)
 
 type signalingSvc struct {
-	idGenerator seq.IDGenerator
 	// repo       itfs.EventParticipantRepo
 	eventSvc   itfs.Service
 	accountSvc account.Service
 	connManger *ConnManager
 }
 
-func NewSignalingService(idGenerator seq.IDGenerator,
-	eventSvc itfs.Service,
+func NewSignalingService(eventSvc itfs.Service,
 	accountSvc account.Service,
 	connManger *ConnManager) itfs.SignalingService {
 	return &signalingSvc{
-		idGenerator: idGenerator,
-		eventSvc:    eventSvc,
-		accountSvc:  accountSvc,
-		connManger:  connManger,
+		eventSvc:   eventSvc,
+		accountSvc: accountSvc,
+		connManger: connManger,
 	}
 }
 
@@ -120,12 +116,36 @@ func (s *signalingSvc) UpdateLineup(ctx context.Context, req *entity.UpdateLineu
 }
 
 func (s *signalingSvc) DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error {
-	err := s.eventSvc.DeleteLineup(ctx, req.ID, req.AccountID)
+	err := s.eventSvc.DeleteLineup(ctx, req)
 	if err != nil {
 		log.S().Errorw("DeleteLineup: delete lineup fail", "err", err)
 		return err
 	}
 	return nil
+}
+
+func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error) {
+	id, err := s.eventSvc.NewMatch(ctx, req)
+	if err != nil {
+		log.S().Errorw("NewMatch: new match fail", "err", err)
+		return nil, err
+	}
+
+	return &entity.NewMatchRes{
+		MatchID: id,
+	}, nil
+}
+
+func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
+	res := &entity.JoinMatchRes{}
+
+	return res, nil
+}
+
+func (s *signalingSvc) EndMatch(ctx context.Context, req *entity.EndMatchReq) (*entity.EndMatchRes, error) {
+	res := &entity.EndMatchRes{}
+
+	return res, nil
 }
 
 func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
@@ -134,25 +154,6 @@ func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) 
 	// return s.repo.Update(ctx, 0, req.Operator, "status", entity.UserOnline)
 	return nil
 }
-
-func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error) {
-	res := &entity.NewMatchRes{}
-	res.Player = &entity.Player{
-		ID:    req.Operator,
-		Scene: entity.NewScene(),
-	}
-	return res, nil
-}
-
-// func (s *signalingSvc) JoinMatch(ctx context.Context, req entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
-// 	res := &entity.JoinMatchRes{}
-// 	newMatchID, err := s.idGenerator.NextID()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	res.MatchID = newMatchID
-// 	return res, nil
-// }
 
 func (s *signalingSvc) Offline(ctx context.Context, req *entity.LogoutReq) error {
 	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()

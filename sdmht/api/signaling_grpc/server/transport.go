@@ -82,8 +82,9 @@ func deDeleteLineupReq(_ context.Context, grpcReq interface{}) (interface{}, err
 func deNewMatchReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.NewMatchReq)
 	return &entity.NewMatchReq{
-		Operator:   req.Operator,
-		CardConfig: req.CardConfig,
+		AccountID: req.GetAccountId(),
+		Positions: req.GetPositions(),
+		LineupID:  req.GetLineupId(),
 	}, nil
 }
 func enNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
@@ -97,7 +98,7 @@ func enNewMatchReply(_ context.Context, response interface{}) (interface{}, erro
 	if rr == nil {
 		return res, nil
 	}
-	res.Player = grpc.ToPBPlayer(rr.Player)
+	res.MatchId = rr.MatchID
 	return res, nil
 }
 

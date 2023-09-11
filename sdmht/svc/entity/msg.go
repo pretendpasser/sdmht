@@ -16,6 +16,9 @@ const (
 	MsgTypeDeleteLineup = "delete_lineup"
 
 	MsgTypeNewMatch  = "new_match"
+	MsgTypeJoinMatch = "join_match"
+	MsgTypeEndMatch  = "end_match"
+
 	MsgTypeKeepAlive = "keep_alive"
 )
 
@@ -41,5 +44,7 @@ func init() {
 	MsgTypes[MsgTypeUpdateLineup] = UpdateLineupReq{}
 	MsgTypes[MsgTypeDeleteLineup] = DeleteLineupReq{}
 	MsgTypes[MsgTypeNewMatch] = NewMatchReq{}
+	MsgTypes[MsgTypeJoinMatch] = JoinMatchReq{}
+	MsgTypes[MsgTypeEndMatch] = EndMatchReq{}
 	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
 }

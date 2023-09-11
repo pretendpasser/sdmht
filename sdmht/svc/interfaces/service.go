@@ -9,9 +9,11 @@ import (
 type Service interface {
 	CreateLineup(ctx context.Context, lineup *entity.Lineup) error
 	FindLineup(ctx context.Context, query *entity.LineupQuery) (int, []*entity.Lineup, error)
-	GetLineup(ctx context.Context, id uint64, accountID uint64) (*entity.Lineup, error)
+	GetLineup(ctx context.Context, req *entity.GetLineupReq) (*entity.Lineup, error)
 	UpdateLineup(ctx context.Context, lineup *entity.Lineup) error
-	DeleteLineup(ctx context.Context, id uint64, accountID uint64) error
+	DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error
+
+	NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64, error)
 }
 type SignalingService interface {
 	Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error)

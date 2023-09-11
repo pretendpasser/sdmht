@@ -71,7 +71,7 @@ func (r *lineupRepo) Get(ctx context.Context, accountID uint64, id uint64) (*ent
 		res.Units = append(res.Units, tmp)
 	}
 	for _, cardLibrary := range cardLibrarys {
-		tmp, _ := strconv.ParseUint(cardLibrary, 10, 64)
+		tmp, _ := strconv.ParseInt(cardLibrary, 10, 64)
 		res.CardLibrarys = append(res.CardLibrarys, tmp)
 	}
 
@@ -116,7 +116,7 @@ func (r *lineupRepo) Find(ctx context.Context, query *entity.LineupQuery) (total
 			res[i].Units = append(res[i].Units, tmp)
 		}
 		for _, cardLibrary := range cardLibrarys {
-			tmp, _ := strconv.ParseUint(cardLibrary, 10, 64)
+			tmp, _ := strconv.ParseInt(cardLibrary, 10, 64)
 			res[i].CardLibrarys = append(res[i].CardLibrarys, tmp)
 		}
 	}

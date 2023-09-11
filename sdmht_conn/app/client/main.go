@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -10,21 +11,27 @@ import (
 	"syscall"
 	"time"
 
+	"sdmht/lib/log"
 	sdmht_entity "sdmht/sdmht/svc/entity"
 	"sdmht/sdmht_conn/svc/entity"
 
 	"github.com/gorilla/websocket"
 )
 
-type HandlerFunc func(c *Client, n uint64, n1 uint64)
+type HandlerFunc func(c *Client, params interface{})
 
 var cmdList = map[string]HandlerFunc{
 	// "getEvent":       MakeGetEventReq,
 	// "joinEvent":      MakeJoinEventReq,
 	// "leaveEvent":     MakeLeaveEventReq,
 	// "switchspeecher": MakeSwitchSpeecherReq,
-	"newMatch":  MakeNewMatchReq,
-	"keepAlive": MakeKeepAliveReq,
+	"login":        MakeLoginReq,
+	"newLineup":    MakeNewLineupReq,
+	"findLineup":   MakeFindLineupReq,
+	"updateLineup": MakeUpdateLineupReq,
+	"deleteLineup": MakeDeleteLineupReq,
+	"newMatch":     MakeNewMatchReq,
+	"keepAlive":    MakeKeepAliveReq,
 }
 
 func main() {
@@ -135,40 +142,57 @@ func (c *Client) NewSN() int {
 }
 
 func testClient() {
+	errChan := make(chan error)
 	fs := flag.NewFlagSet("webinar_conn demo", flag.ExitOnError)
-	var (
-		token         = fs.String("token", "", "token")
-		willDo        = fs.String("cmd", "", "cmd")
-		addr          = fs.String("addr", "localhost:4090", "ws server addr")
-		eventID       = fs.Uint64("eventid", 0, "eventid")
-		newSpeecherID = fs.Uint64("newspeecherid", 0, "newspeecherid")
-	)
+	// var (
+	// 	token = fs.String("token", "", "token")
+	// 	addr  = fs.String("addr", "localhost:4090", "ws server addr")
+	// )
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		panic(err)
 	}
 
-	wsServerUrl := "ws://" + *addr + "/sdmht"
-	conn, _, err := websocket.DefaultDialer.Dial(wsServerUrl, nil)
-	if err != nil {
-		panic(err)
-	}
+	// wsServerUrl := "ws://" + *addr + "/sdmht"
+	// conn, _, err := websocket.DefaultDialer.Dial(wsServerUrl, nil)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	c := NewClient(1, conn, *token)
-	go c.Run()
-
-	cmdList[*willDo](c, *eventID, *newSpeecherID)
+	// c := NewClient(1, conn, *token)
+	// go c.Run()
 	go func() {
-		for {
-			cmdList["keepAlive"](c, 0, 0)
-			time.Sleep(3 * time.Second)
+		notExit := true
+		for notExit {
+			cmd := ""
+			fmt.Printf("Input cmd > ")
+			fmt.Scanln(&cmd)
+			switch cmd {
+			case "login":
+			case "newLineup":
+			case "findLineup":
+			case "updateLineup":
+			case "deleteLineup":
+			case "newMatch":
+			case "keepAlive":
+			case "exit":
+				notExit = false
+				errChan <- errors.New("cmd exit")
+			default:
+				fmt.Println("invalid cmd!  ", "|", cmd, "|")
+			}
 		}
 	}()
 
-	fmt.Println("recv quit signal")
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	fmt.Println("recv quit signal")
 	defer stop()
-	<-ctx.Done()
-	_ = c.conn.Close()
+	select {
+	case err := <-errChan:
+		log.S().Errorw("quit", "err", err)
+	case <-ctx.Done():
+		log.S().Info("recv quit signal")
+	}
+	// _ = c.conn.Close()
 	time.Sleep(1 * time.Second)
 	fmt.Println("quit")
 }
@@ -181,29 +205,32 @@ func testClient() {
 // 	c.sendPayloadChan <- payload
 // }
 
-// func MakeJoinEventReq(c *Client, eventID uint64, _ uint64) {
-// 	payload := entity.NewReqPayload(c.NewSN(), webinar_entity.MsgTypeJoinEvent, c.token, webinar_entity.JoinEventReq{
-// 		EventID: eventID,
-// 	})
-// 	c.sendPayloadChan <- payload
-// }
+func MakeLoginReq(c *Client, _ interface{}) {
 
-// func MakeLeaveEventReq(c *Client, eventID uint64, _ uint64) {
-// 	payload := entity.NewReqPayload(c.NewSN(), webinar_entity.MsgTypeLeaveEvent, c.token, webinar_entity.LeaveEventReq{
-// 		EventID: eventID,
-// 	})
-// 	c.sendPayloadChan <- payload
-// }
+}
 
-func MakeNewMatchReq(c *Client, _ uint64, _ uint64) {
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatch, &sdmht_entity.NewMatchReq{
-		Operator:   11,
-		CardConfig: 22,
-	})
+func MakeNewLineupReq(c *Client, _ interface{}) {
+
+}
+
+func MakeFindLineupReq(c *Client, _ interface{}) {
+
+}
+
+func MakeUpdateLineupReq(c *Client, _ interface{}) {
+
+}
+
+func MakeDeleteLineupReq(c *Client, _ interface{}) {
+
+}
+
+func MakeNewMatchReq(c *Client, _ interface{}) {
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatch, &sdmht_entity.NewMatchReq{})
 	c.sendPayloadChan <- payload
 }
 
-func MakeKeepAliveReq(c *Client, _ uint64, _ uint64) {
+func MakeKeepAliveReq(c *Client, _ interface{}) {
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
 	c.sendPayloadChan <- payload
 }

@@ -6,23 +6,27 @@ const (
 )
 
 type LoginReq struct {
-	WeChatID string
-	UserName string
+	WeChatID string `json:"wechat_id"`
+	UserName string `json:"username"`
 }
-
 type LoginRes struct {
-	AccountID uint64
+	AccountID uint64 `json:"account_id"`
 }
 
 type NewLineupReq struct {
 	Lineup
 }
 
+type GetLineupReq struct {
+	ID        uint64 `json:"id"`
+	AccountID uint64 `json:"account_id"`
+}
+
 type FindLineupReq struct {
-	AccountID uint64
+	AccountID uint64 `json:"account_id"`
 }
 type FindLineupRes struct {
-	Total   int
+	Total   int       `json:"total"`
 	Lineups []*Lineup `json:"lineups"`
 }
 
@@ -31,18 +35,28 @@ type UpdateLineupReq struct {
 }
 
 type DeleteLineupReq struct {
-	ID        uint64
-	AccountID uint64
+	ID        uint64 `json:"id"`
+	AccountID uint64 `json:"account_id"`
 }
 
 type NewMatchReq struct {
-	Operator   uint64 `json:"operator"`
-	CardConfig uint64 `json:"card_config"`
+	AccountID uint64   `json:"account_id"`
+	Positions []uint64 `json:"positions"`
+	LineupID  uint64   `json:"lineup_id"`
+}
+type NewMatchRes struct {
+	MatchID uint64 `json:"match_id"`
 }
 
-type NewMatchRes struct {
-	Player *Player `json:"player"`
+type JoinMatchReq struct {
+	AccountID uint64  `json:"account_id"`
+	MatchID   uint64  `json:"match_id"`
+	Positions []int64 `json:"positions"`
 }
+type JoinMatchRes struct{}
+
+type EndMatchReq struct{}
+type EndMatchRes struct{}
 
 // type JoinMatchReq struct {
 // 	Operator   uint64 `json:"operator"`

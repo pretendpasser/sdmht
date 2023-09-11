@@ -151,7 +151,6 @@ func main() {
 	}
 
 	server.Close()
-	//server.CloseWait()
 
 	grpcServer.GracefulStop()
 

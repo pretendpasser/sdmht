@@ -72,8 +72,9 @@ func enDeleteLineupReq(_ context.Context, request interface{}) (interface{}, err
 func enNewMatchReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.NewMatchReq)
 	return &pb.NewMatchReq{
-		Operator:   req.Operator,
-		CardConfig: req.CardConfig,
+		AccountId: req.AccountID,
+		Positions: req.Positions,
+		LineupId:  req.LineupID,
 	}, nil
 }
 func deNewMatchReply(_ context.Context, response interface{}) (interface{}, error) {
@@ -82,7 +83,7 @@ func deNewMatchReply(_ context.Context, response interface{}) (interface{}, erro
 		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
 	}
 	return &entity.NewMatchRes{
-		Player: grpc.FromPBPlayer(r.Player),
+		MatchID: r.MatchId,
 	}, nil
 }
 
