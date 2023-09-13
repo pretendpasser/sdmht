@@ -25,6 +25,8 @@ type grpcServer struct {
 	UpdateLineupHandler grpc.Handler
 	DeleteLineupHandler grpc.Handler
 	NewMatchHandler     grpc.Handler
+	GetMatchHandler     grpc.Handler
+	JoinMatchHandler    grpc.Handler
 	KeepAliveHandler    grpc.Handler
 	OfflineHandler      grpc.Handler
 }
@@ -45,6 +47,8 @@ func NewGRPCServer(svc itfs.SignalingService, opts *kitx.ServerOptions) pb.Signa
 	srv.UpdateLineupHandler = makeUpdateLineupHandler(svc, options, opts)
 	srv.DeleteLineupHandler = makeDeleteLineupHandler(svc, options, opts)
 	srv.NewMatchHandler = makeNewMatchHandler(svc, options, opts)
+	srv.GetMatchHandler = makeGetMatchHandler(svc, options, opts)
+	srv.JoinMatchHandler = makeJoinMatchHandler(svc, options, opts)
 	srv.KeepAliveHandler = makeKeepAliveHandler(svc, options, opts)
 	srv.OfflineHandler = makeOfflineHandler(svc, options, opts)
 
@@ -65,6 +69,22 @@ func (s *grpcServer) NewMatch(ctx context.Context, req *pb.NewMatchReq) (*pb.New
 		return nil, err
 	}
 	return res.(*pb.NewMatchReply), nil
+}
+
+func (s *grpcServer) GetMatch(ctx context.Context, req *pb.GetMatchReq) (*pb.GetMatchReply, error) {
+	_, res, err := s.GetMatchHandler.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*pb.GetMatchReply), nil
+}
+
+func (s *grpcServer) JoinMatch(ctx context.Context, req *pb.JoinMatchReq) (*pb.JoinMatchReply, error) {
+	_, res, err := s.JoinMatchHandler.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*pb.JoinMatchReply), nil
 }
 
 func (s *grpcServer) KeepAlive(ctx context.Context, req *pb.KeepAliveReq) (*pb.CommonReply, error) {
@@ -135,6 +155,24 @@ func makeNewMatchHandler(svc itfs.SignalingService, options []grpc.ServerOption,
 	}, opts)
 
 	return grpc.NewServer(ep, deNewMatchReq, enNewMatchReply, options...)
+}
+
+func makeGetMatchHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {
+	ep := kitx.ServerEndpoint(func() (endpoint.Endpoint, string) {
+		ep := api.MakeGetMatchEndpoint(svc)
+		return ep, "sdmht.signaling.GetMatch"
+	}, opts)
+
+	return grpc.NewServer(ep, deGetMatchReq, enGetMatchReply, options...)
+}
+
+func makeJoinMatchHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {
+	ep := kitx.ServerEndpoint(func() (endpoint.Endpoint, string) {
+		ep := api.MakeJoinMatchEndpoint(svc)
+		return ep, "sdmht.signaling.JoinMatch"
+	}, opts)
+
+	return grpc.NewServer(ep, deJoinMatchReq, enJoinMatchReply, options...)
 }
 
 func makeKeepAliveHandler(svc itfs.SignalingService, options []grpc.ServerOption, opts *kitx.ServerOptions) grpc.Handler {

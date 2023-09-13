@@ -58,6 +58,22 @@ func MakeNewMatchEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	}
 }
 
+func MakeGetMatchEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.GetMatchReq)
+		res, err := s.GetMatch(ctx, req)
+		return kitx.Response{Value: res, Error: err}, nil
+	}
+}
+
+func MakeJoinMatchEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.JoinMatchReq)
+		res, err := s.JoinMatch(ctx, req)
+		return kitx.Response{Value: res, Error: err}, nil
+	}
+}
+
 func MakeKeepAliveEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*entity.KeepAliveReq)

@@ -235,37 +235,25 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 			break
 		}
 		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", sdmht_entity.CommonRes{})
-	// case webinar_entity.MsgTypeJoinEvent:
-	// 	content := payload.MsgContent.(*webinar_entity.JoinEventReq)
-	// 	content.Operator = c.AccountID
-	// 	resp, err1 := c.webinarMng.JoinEvent(ctx, *content)
-	// 	if err1 != nil {
-	// 		err = err1
-	// 		break
-	// 	}
-	// 	slog(ctx).Infow("join event resp", "resp", resp, "participantList", resp.ParticipantList)
-	// 	ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", resp)
-	// case webinar_entity.MsgTypeLeaveEvent:
-	// 	content := payload.MsgContent.(*webinar_entity.LeaveEventReq)
-	// 	content.Operator = c.AccountID
-	// 	err = c.webinarMng.LeaveEvent(ctx, *content)
-	// 	if err != nil {
-	// 		break
-	// 	}
-	// 	ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", webinar_entity.CommonResp{})
-	// case webinar_entity.MsgTypeSwitchSpeecherRequest:
-	// 	content := payload.MsgContent.(*webinar_entity.SwitchSpeecherReq)
-	// 	content.Operator = c.AccountID
-	// 	resp, err1 := c.webinarMng.SwitchSpeecher(ctx, *content)
-	// 	if err1 != nil {
-	// 		err = err1
-	// 		break
-	// 	}
-	// 	slog(ctx).Infow("SwitchSpeecher resp", "resp", resp, "ac", resp.AudioParam, "vc", resp.VideoParam)
-	// 	ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", resp)
 	case sdmht_entity.MsgTypeNewMatch:
 		content := payload.MsgContent.(*sdmht_entity.NewMatchReq)
 		rsp, err1 := c.connMng.NewMatch(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", rsp)
+	case sdmht_entity.MsgTypeGetMatch:
+		content := payload.MsgContent.(*sdmht_entity.GetMatchReq)
+		rsp, err1 := c.connMng.GetMatch(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", rsp)
+	case sdmht_entity.MsgTypeJoinMatch:
+		content := payload.MsgContent.(*sdmht_entity.JoinMatchReq)
+		rsp, err1 := c.connMng.JoinMatch(ctx, content)
 		if err1 != nil {
 			err = err1
 			break

@@ -54,7 +54,7 @@ type TempAttribute struct {
 
 // 单位属性
 type BaseAttribute struct {
-	ID           uint64 `json:"id" db:"id"`
+	ID           int64  `json:"id" db:"id"`
 	Name         string `json:"name" db:"name"`
 	SkillName    string `json:"skill_name" db:"skill_name"`
 	Rarity       int32  `json:"rarity" db:"rarity"`       // 稀有度

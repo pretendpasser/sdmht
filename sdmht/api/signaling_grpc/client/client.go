@@ -25,6 +25,8 @@ type grpcClient struct {
 	UpdateLineupEndpoint endpoint.Endpoint
 	DeleteLineupEndpoint endpoint.Endpoint
 	NewMatchEndpoint     endpoint.Endpoint
+	GetMatchEndpoint     endpoint.Endpoint
+	JoinMatchEndpoint    endpoint.Endpoint
 	KeepAliveEndpoint    endpoint.Endpoint
 	OfflineEndpoint      endpoint.Endpoint
 }
@@ -66,6 +68,22 @@ func (c *grpcClient) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*en
 		return nil, err
 	}
 	return res.(*entity.NewMatchRes), nil
+}
+
+func (c *grpcClient) GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.GetMatchRes, error) {
+	res, err := c.GetMatchEndpoint(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*entity.GetMatchRes), nil
+}
+
+func (c *grpcClient) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
+	res, err := c.JoinMatchEndpoint(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*entity.JoinMatchRes), nil
 }
 
 func (c *grpcClient) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
@@ -163,6 +181,28 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			pb.NewMatchReply{},
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.NewMatch"
+	}, opts)
+	c.GetMatchEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"GetMatch",
+			enGetMatchReq,
+			deGetMatchReply,
+			pb.GetMatchReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.GetMatch"
+	}, opts)
+	c.JoinMatchEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"JoinMatch",
+			enJoinMatchReq,
+			deJoinMatchReply,
+			pb.JoinMatchReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.JoinMatch"
 	}, opts)
 	c.KeepAliveEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(

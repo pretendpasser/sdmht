@@ -2,6 +2,7 @@ package sdmht
 
 import (
 	"context"
+	"math/rand"
 
 	"sdmht/lib"
 	"sdmht/lib/log"
@@ -149,18 +150,20 @@ func (s *service) DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq)
 func (s *service) NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64, error) {
 	lineup, err := s.lineupRepo.Get(ctx, req.AccountID, req.LineupID)
 	if err != nil {
-		log.S().Errorw("NewMatch get lineup fail", "err", err)
+		log.S().Errorw("NewMatch get lineup fail",
+			"accountid", req.AccountID, "lineupid", req.LineupID,
+			"err", err)
 		return 0, err
 	}
 	if !lineup.Enabled {
 		return 0, lib.NewError(lib.ErrInvalidArgument, "unit number invalid")
 	}
-	unitsLocation := make(map[uint64]int32)
+	unitsLocation := make(map[int64]int32)
 	for _, unitID := range lineup.Units {
 		unitsLocation[unitID] = -1
 	}
 
-	unitIDs := []uint64{}
+	unitIDs := []int64{}
 	for position, unitID := range req.Positions {
 		if unitID != 0 && unitsLocation[unitID] == -1 {
 			unitsLocation[unitID] = int32(position)
@@ -189,6 +192,7 @@ func (s *service) NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64
 	match.ID, _ = s.idGenerator.NextID()
 	match.Players = append(match.Players, player)
 
+	s.matchRepo.SetAccount(player.ID, match.ID)
 	err = s.matchRepo.New(match)
 	if err != nil {
 		log.S().Errorw("NewMatch fail", "err", err)
@@ -198,8 +202,77 @@ func (s *service) NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64
 	return match.ID, nil
 }
 
-func (s *service) JoinMatch() {
-	// curRoundID = rand.Perm(2)[0]
+func (s *service) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.Match, error) {
+	lineup, err := s.lineupRepo.Get(ctx, req.AccountID, req.LineupID)
+	if err != nil {
+		log.S().Errorw("NewMatch get lineup fail",
+			"accountid", req.AccountID, "lineupid", req.LineupID,
+			"err", err)
+		return nil, err
+	}
+	if !lineup.Enabled {
+		return nil, lib.NewError(lib.ErrInvalidArgument, "unit number invalid")
+	}
+	unitsLocation := make(map[int64]int32)
+	for _, unitID := range lineup.Units {
+		unitsLocation[unitID] = -1
+	}
+
+	unitIDs := []int64{}
+	for position, unitID := range req.Positions {
+		if unitID != 0 && unitsLocation[unitID] == -1 {
+			unitsLocation[unitID] = int32(position)
+			unitIDs = append(unitIDs, unitID)
+		}
+	}
+	if len(unitIDs) != entity.MaxBaseUnitNum {
+		return nil, lib.NewError(lib.ErrInvalidArgument, "unit number invalid")
+	}
+
+	units, err := s.unitRepo.Get(ctx, unitIDs)
+	if err != nil {
+		log.S().Errorw("NewMatch get units fail", "err", err)
+		return nil, err
+	}
+	for i, unit := range units {
+		units[i].Location = unitsLocation[unit.ID]
+	}
+
+	player := &entity.Player{}
+	player.ID = req.AccountID
+	player.Scene = entity.NewScene(lineup.CardLibrarys)
+	player.Units = units
+
+	match, err := s.matchRepo.Get(req.MatchID)
+	if err != nil {
+		log.S().Errorw("JoinMatch: get match fail", "err", err)
+		return nil, err
+	}
+	if len(match.Players) >= 2 {
+		log.S().Errorw("JoinMatch: get match fail", "err", err)
+		return nil, lib.NewError(lib.ErrInternal, "match is already full")
+	}
+
+	if rand.Perm(2)[0] == 1 {
+		player.MyTurn = true
+		match.Players[0].MyTurn = false
+	} else {
+		player.MyTurn = false
+		match.Players[0].MyTurn = true
+	}
+	match.Players = append(match.Players, player)
+
+	s.matchRepo.SetAccount(player.ID, match.ID)
+	err = s.matchRepo.Join(match)
+	if err != nil {
+		log.S().Errorw("JoinMatch: join match fail", "err", err)
+		return nil, err
+	}
+
+	return match, nil
 }
 
-func (s *service) EndMatch() {}
+func (s *service) GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.Match, error) {
+	matchID := s.matchRepo.GetAccount(req.AccountID)
+	return s.matchRepo.Get(matchID)
+}

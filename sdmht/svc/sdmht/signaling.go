@@ -2,7 +2,9 @@ package sdmht
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"time"
 
 	account_entity "sdmht/account/svc/entity"
 	account "sdmht/account/svc/interfaces"
@@ -136,16 +138,48 @@ func (s *signalingSvc) NewMatch(ctx context.Context, req *entity.NewMatchReq) (*
 	}, nil
 }
 
-func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
-	res := &entity.JoinMatchRes{}
+func (s *signalingSvc) GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.GetMatchRes, error) {
+	match, err := s.eventSvc.GetMatch(ctx, req)
+	if err != nil {
+		log.S().Errorw("NewMatch: new match fail", "err", err)
+		return nil, err
+	}
 
-	return res, nil
+	return &entity.GetMatchRes{
+		Match: *match,
+	}, nil
 }
 
-func (s *signalingSvc) EndMatch(ctx context.Context, req *entity.EndMatchReq) (*entity.EndMatchRes, error) {
-	res := &entity.EndMatchRes{}
+func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error) {
+	match, err := s.eventSvc.JoinMatch(ctx, req)
+	if err != nil {
+		log.S().Errorw("JoinMatch: join match fail", "err", err)
+		return nil, err
+	}
 
-	return res, nil
+	data, err := json.Marshal(&match)
+	if err != nil {
+		log.S().Errorw("JoinMatch: marshal match fail", "err", err)
+		return nil, err
+	}
+	log.S().Errorw("JoinEvent:MarshalNotice", "data", json.RawMessage(data))
+	cli, e := s.connManger.GetConnCli(context.TODO(), req.AccountID)
+	if e != nil {
+		log.S().Errorw("JoinEvent:Dispatch", "accountid", req.AccountID, "noClient", cli == nil, "err", e)
+	}
+	go func(match *entity.Match, data []byte) {
+		accountID := match.Players[0].ID
+		_, _ = cli.DispatchEventToClient(context.TODO(), accountID, entity.ClientEvent{
+			AccountID: accountID,
+			Type:      entity.MsgTypeSyncMatch,
+			AtTime:    time.Now(),
+			Content:   data,
+		})
+	}(match, data)
+
+	return &entity.JoinMatchRes{
+		Match: *match,
+	}, nil
 }
 
 func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {

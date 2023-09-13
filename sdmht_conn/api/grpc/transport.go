@@ -14,10 +14,10 @@ import (
 func decodeDispatchEventToClientReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.ClientEventReq)
 	rr := sdmht_entity.ClientEvent{
-		UserID:  req.GetUserId(),
-		Type:    req.GetEvent().GetType(),
-		AtTime:  req.GetEvent().GetAtTime().AsTime(),
-		Content: json.RawMessage([]byte(req.GetEvent().GetContent())),
+		AccountID: req.GetAccountId(),
+		Type:      req.GetEvent().GetType(),
+		AtTime:    req.GetEvent().GetAtTime().AsTime(),
+		Content:   json.RawMessage([]byte(req.GetEvent().GetContent())),
 	}
 	return rr, nil
 }
@@ -57,9 +57,9 @@ func encodeKickClientReply(_ context.Context, response interface{}) (interface{}
 
 func ConvertClientReplyToPB(reply sdmht_entity.DispatchEventToClientReply) *pb.ClientReply {
 	return &pb.ClientReply{
-		UserId: reply.UserID,
-		Ok:     reply.OK,
-		Err:    reply.ClientErr,
+		AccountId: reply.AccountID,
+		Ok:        reply.OK,
+		Err:       reply.ClientErr,
 	}
 }
 

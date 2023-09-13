@@ -14,6 +14,8 @@ type Service interface {
 	DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error
 
 	NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64, error)
+	JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.Match, error)
+	GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.Match, error)
 }
 type SignalingService interface {
 	Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error)
@@ -26,4 +28,6 @@ type SignalingService interface {
 	Offline(ctx context.Context, req *entity.LogoutReq) error
 
 	NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error)
+	JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error)
+	GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.GetMatchRes, error)
 }

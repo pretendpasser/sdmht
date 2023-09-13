@@ -16,8 +16,12 @@ message KickClientReq {
   uint64 user_id = 1;
 }
 
+message SyncMatchReq {
+
+}
+
 message ClientEventReq {
-  uint64 user_id = 1;
+  uint64 account_id = 1;
   Event event = 2;
 }
 
@@ -33,7 +37,7 @@ message DispatchEventToClientReply {
 }
 
 message ClientReply {
-  uint64 user_id = 1;
+  uint64 account_id = 1;
   bool ok = 2;
   string err = 3;
 }

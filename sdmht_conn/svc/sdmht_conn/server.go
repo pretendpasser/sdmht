@@ -110,7 +110,7 @@ func (s *Server) DispatchEventToClient(ctx context.Context, accountID uint64, ev
 	log.S().Infow("handle dispatch", "accountID", accountID, "event.Type", event.Type, "event.Content", string(event.Content))
 	c, has := s.GetClient(accountID)
 	if !has {
-		return res, lib.NewError(lib.ErrUnavailable, entity.ErrPocConnClientNotOnline)
+		return res, lib.NewError(lib.ErrUnavailable, entity.ErrConnClientNotOnline)
 	}
 	payload := entity.NewReqPayload(c.NewSN(), event.Type, event.Content)
 
@@ -120,30 +120,12 @@ func (s *Server) DispatchEventToClient(ctx context.Context, accountID uint64, ev
 		res.ClientErr = resp.Result.Reason
 	} else {
 		res = sdmht_entity.DispatchEventToClientReply{
-			UserID: c.AccountID(),
-			OK:     true,
+			AccountID: c.AccountID(),
+			OK:        true,
 		}
 	}
 	return
 }
-
-// func (s *Server) SwitchToSpeecher(ctx context.Context, req webinar_entity.SwitchSpeecherReq) (res *webinar_entity.SwitchSpeecherRes, err error) {
-// 	log.S().Infow("switch speeker", "operator", req.Operator, "new speaker", req.NewSpeecherID)
-// 	c, has := s.GetClient(req.NewSpeecherID)
-// 	if !has {
-// 		log.S().Error("client not found")
-// 		return res, lib.NewError(lib.ErrUnavailable, entity.ErrPocConnClientNotOnline)
-// 	}
-// 	payload := entity.NewReqPayload(c.NewSN(), webinar_entity.MsgTypeSwitchSpeecherCommand, "", req)
-// 	resp, err := c.DoRequest(payload)
-// 	if err != nil || resp.Code != entity.ErrCodeMsgSuccess {
-// 		log.S().Errorw("client do request fail", "code", resp.Code, "reason", resp.Reason)
-// 		return nil, lib.NewError(lib.ErrUnavailable, resp.Reason)
-// 	}
-
-// 	res = resp.MsgContent.(*webinar_entity.SwitchSpeecherRes)
-// 	return
-// }
 
 func (s *Server) KickClient(ctx context.Context, catonID uint64) error {
 	s.rwLock.Lock()

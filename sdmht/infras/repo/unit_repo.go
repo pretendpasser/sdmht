@@ -24,7 +24,7 @@ func NewUnitRepo(db *sqlx.DB) *unitRepo {
 	}
 }
 
-func (r *unitRepo) Get(ctx context.Context, ids []uint64) ([]*entity.Unit, error) {
+func (r *unitRepo) Get(ctx context.Context, ids []int64) ([]*entity.Unit, error) {
 	if len(ids) == 0 {
 		return nil, lib.NewError(lib.ErrInvalidArgument, "no gods")
 	}

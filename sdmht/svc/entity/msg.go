@@ -16,8 +16,9 @@ const (
 	MsgTypeDeleteLineup = "delete_lineup"
 
 	MsgTypeNewMatch  = "new_match"
+	MsgTypeGetMatch  = "get_match"
 	MsgTypeJoinMatch = "join_match"
-	MsgTypeEndMatch  = "end_match"
+	MsgTypeSyncMatch = "sync_match"
 
 	MsgTypeKeepAlive = "keep_alive"
 )
@@ -25,14 +26,14 @@ const (
 type CommonRes struct{}
 
 type ClientEvent struct {
-	UserID  uint64
-	Type    string
-	AtTime  time.Time
-	Content json.RawMessage
+	AccountID uint64
+	Type      string
+	AtTime    time.Time
+	Content   json.RawMessage
 }
 
 type DispatchEventToClientReply struct {
-	UserID    uint64
+	AccountID uint64
 	OK        bool
 	ClientErr string
 }
@@ -44,7 +45,7 @@ func init() {
 	MsgTypes[MsgTypeUpdateLineup] = UpdateLineupReq{}
 	MsgTypes[MsgTypeDeleteLineup] = DeleteLineupReq{}
 	MsgTypes[MsgTypeNewMatch] = NewMatchReq{}
+	MsgTypes[MsgTypeGetMatch] = GetMatchReq{}
 	MsgTypes[MsgTypeJoinMatch] = JoinMatchReq{}
-	MsgTypes[MsgTypeEndMatch] = EndMatchReq{}
 	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
 }

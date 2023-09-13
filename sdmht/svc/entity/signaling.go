@@ -40,23 +40,30 @@ type DeleteLineupReq struct {
 }
 
 type NewMatchReq struct {
-	AccountID uint64   `json:"account_id"`
-	Positions []uint64 `json:"positions"`
-	LineupID  uint64   `json:"lineup_id"`
+	AccountID uint64  `json:"account_id"`
+	Positions []int64 `json:"positions"`
+	LineupID  uint64  `json:"lineup_id"`
 }
 type NewMatchRes struct {
 	MatchID uint64 `json:"match_id"`
+}
+
+type GetMatchReq struct {
+	AccountID uint64 `json:"account_id"`
+}
+type GetMatchRes struct {
+	Match
 }
 
 type JoinMatchReq struct {
 	AccountID uint64  `json:"account_id"`
 	MatchID   uint64  `json:"match_id"`
 	Positions []int64 `json:"positions"`
+	LineupID  uint64  `json:"lineup_id"`
 }
-type JoinMatchRes struct{}
-
-type EndMatchReq struct{}
-type EndMatchRes struct{}
+type JoinMatchRes struct {
+	Match
+}
 
 // type JoinMatchReq struct {
 // 	Operator   uint64 `json:"operator"`

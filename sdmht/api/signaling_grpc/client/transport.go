@@ -87,6 +87,43 @@ func deNewMatchReply(_ context.Context, response interface{}) (interface{}, erro
 	}, nil
 }
 
+func enGetMatchReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.GetMatchReq)
+	return &pb.GetMatchReq{
+		AccountId: req.AccountID,
+	}, nil
+}
+func deGetMatchReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(*pb.GetMatchReply)
+	if r.GetErr() != nil {
+		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
+	}
+	match := grpc.FromPBMatch(r.Match)
+	return &entity.GetMatchRes{
+		Match: *match,
+	}, nil
+}
+
+func enJoinMatchReq(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*entity.JoinMatchReq)
+	return &pb.JoinMatchReq{
+		AccountId: req.AccountID,
+		Positions: req.Positions,
+		LineupId:  req.LineupID,
+		MatchId:   req.MatchID,
+	}, nil
+}
+func deJoinMatchReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(*pb.JoinMatchReply)
+	if r.GetErr() != nil {
+		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
+	}
+	match := grpc.FromPBMatch(r.Match)
+	return &entity.JoinMatchRes{
+		Match: *match,
+	}, nil
+}
+
 func enKeepAliveReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.KeepAliveReq)
 	return &pb.KeepAliveReq{

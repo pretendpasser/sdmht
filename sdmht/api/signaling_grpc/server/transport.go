@@ -102,6 +102,51 @@ func enNewMatchReply(_ context.Context, response interface{}) (interface{}, erro
 	return res, nil
 }
 
+func deGetMatchReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+	req := grpcReq.(*pb.GetMatchReq)
+	return &entity.GetMatchReq{
+		AccountID: req.GetAccountId(),
+	}, nil
+}
+func enGetMatchReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(kitx.Response)
+	res := &pb.GetMatchReply{}
+	if r.Error != nil {
+		res.Err = errpb.ToPbError(r.Error)
+		return res, nil
+	}
+	rr := r.Value.(*entity.GetMatchRes)
+	if rr == nil {
+		return res, nil
+	}
+	res.Match = grpc.ToPBMatch(&rr.Match)
+	return res, nil
+}
+
+func deJoinMatchReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+	req := grpcReq.(*pb.JoinMatchReq)
+	return &entity.JoinMatchReq{
+		AccountID: req.GetAccountId(),
+		Positions: req.GetPositions(),
+		LineupID:  req.GetLineupId(),
+		MatchID:   req.GetMatchId(),
+	}, nil
+}
+func enJoinMatchReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(kitx.Response)
+	res := &pb.JoinMatchReply{}
+	if r.Error != nil {
+		res.Err = errpb.ToPbError(r.Error)
+		return res, nil
+	}
+	rr := r.Value.(*entity.JoinMatchRes)
+	if rr == nil {
+		return res, nil
+	}
+	res.Match = grpc.ToPBMatch(&rr.Match)
+	return res, nil
+}
+
 func enCommonReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)
 	res := &pb.CommonReply{}

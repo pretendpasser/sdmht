@@ -13,6 +13,8 @@ service Signaling {
     rpc UpdateLineup(UpdateLineupReq) returns (CommonReply);
     rpc DeleteLineup(DeleteLineupReq) returns (CommonReply);
     rpc NewMatch(NewMatchReq) returns (NewMatchReply);
+    rpc GetMatch(GetMatchReq) returns (GetMatchReply);
+    rpc JoinMatch(JoinMatchReq) returns (JoinMatchReply);
     rpc KeepAlive(KeepAliveReq) returns (CommonReply);
     rpc Offline(LogoutReq) returns (CommonReply);
 }
@@ -26,7 +28,7 @@ message Lineup {
     uint64 account_id = 2;
     string name = 3;
     bool enabled = 4;
-    repeated uint64 units = 5;
+    repeated int64 units = 5;
     repeated int64 card_librarys = 6;
 }
 
@@ -39,7 +41,7 @@ message Scene {
 }
 
 message BaseAttribute {
-    uint64  id = 1;
+    int64  id = 1;
     string  name = 2;
     string  skill = 3;
     int32  rarity = 4;
@@ -82,18 +84,16 @@ message Player {
     uint64 id = 1;
     Scene scene = 2;
     repeated Unit units= 3;
+    int32 cost = 4;
+    bool my_turn = 5;
 }
 
-message NewMatchReq {
-    uint64 account_id = 1;
-    repeated uint64 positions = 2;
-    uint64 lineup_id = 3;
+message match {
+    uint64 id = 1;
+    uint64 winner = 2;
+    uint64 cur_round_id = 3;
+    repeated Player players = 4;
 }
-message NewMatchReply {
-    lib.Error err = 1;
-    uint64 match_id = 2;
-}
-
 
 message LoginReq {
     string wechat_id = 1;
@@ -125,6 +125,36 @@ message DeleteLineupReq {
     uint64 id = 1;
     uint64 account_id = 2;
 }
+
+message NewMatchReq {
+    uint64 account_id = 1;
+    repeated int64 positions = 2;
+    uint64 lineup_id = 3;
+}
+message NewMatchReply {
+    lib.Error err = 1;
+    uint64 match_id = 2;
+}
+
+message GetMatchReq {
+    uint64 account_id = 1;
+}
+message GetMatchReply {
+    lib.Error err = 1;
+    match match = 2;
+}
+
+message JoinMatchReq {
+    uint64 account_id = 1;
+    repeated int64 positions = 2;
+    uint64 lineup_id = 3;
+    uint64 match_id = 4;
+}
+message JoinMatchReply {
+    lib.Error err = 1;
+    match match = 2;
+}
+
 
 message KeepAliveReq {
     uint64 operator = 1;

@@ -13,7 +13,7 @@ import (
 func encodeDispatchEventToClientRequest(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*sdmht_entity.ClientEvent)
 	return &pb.ClientEventReq{
-		UserId: req.UserID,
+		AccountId: req.AccountID,
 		Event: &pb.Event{
 			Type:    req.Type,
 			Content: string(req.Content),
@@ -29,7 +29,7 @@ func decodeDispatchEventToClientReply(_ context.Context, grpcResponse interface{
 	}
 
 	return sdmht_entity.DispatchEventToClientReply{
-		UserID:    gr.ClientReply.UserId,
+		AccountID: gr.ClientReply.AccountId,
 		OK:        gr.ClientReply.Ok,
 		ClientErr: gr.ClientReply.Err,
 	}, nil

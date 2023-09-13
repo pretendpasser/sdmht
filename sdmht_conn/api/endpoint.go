@@ -15,7 +15,7 @@ type Response = kitx.Response
 func MakeDispatchEventToClientEndpoint(s itfs.ConnService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(webinar_entity.ClientEvent)
-		rsp, err := s.DispatchEventToClient(ctx, req.UserID, req)
+		rsp, err := s.DispatchEventToClient(ctx, req.AccountID, req)
 		return Response{Value: rsp, Error: err}, nil
 	}
 }

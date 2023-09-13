@@ -65,17 +65,65 @@ func FromPBPlayer(in *pb.Player) (out *entity.Player) {
 	if in == nil {
 		return (*entity.Player)(nil)
 	}
-	return &entity.Player{
-		ID:    in.Id,
-		Scene: FromPBScene(in.Scene),
+	out = &entity.Player{
+		ID:     in.GetId(),
+		MyTurn: in.GetMyTurn(),
+		Cost:   in.GetCost(),
+		Scene:  FromPBScene(in.GetScene()),
+		Units:  []*entity.Unit{},
 	}
+	for _, unit := range in.GetUnits() {
+		out.Units = append(out.Units, FromPBUnit(unit))
+	}
+	return out
 }
 func ToPBPlayer(in *entity.Player) (out *pb.Player) {
 	if in == nil {
 		return (*pb.Player)(nil)
 	}
-	return &pb.Player{
-		Id:    in.ID,
-		Scene: ToPBScene(in.Scene),
+	out = &pb.Player{
+		Id:     in.ID,
+		MyTurn: in.MyTurn,
+		Cost:   in.Cost,
+		Scene:  ToPBScene(in.Scene),
+		Units:  []*pb.Unit{},
 	}
+	for _, unit := range in.Units {
+		out.Units = append(out.Units, ToPBUnit(unit))
+	}
+	return out
 }
+
+func FromPBMatch(in *pb.Match) (out *entity.Match) {
+	if in == nil {
+		return (*entity.Match)(nil)
+	}
+	out = &entity.Match{
+		ID:         in.GetId(),
+		Winner:     in.GetWinner(),
+		CurRoundID: in.GetCurRoundId(),
+		Players:    []*entity.Player{},
+	}
+	for _, player := range in.GetPlayers() {
+		out.Players = append(out.Players, FromPBPlayer(player))
+	}
+	return out
+}
+func ToPBMatch(in *entity.Match) (out *pb.Match) {
+	if in == nil {
+		return (*pb.Match)(nil)
+	}
+	out = &pb.Match{
+		Id:         in.ID,
+		Winner:     in.Winner,
+		CurRoundId: in.CurRoundID,
+		Players:    []*pb.Player{},
+	}
+	for _, player := range in.Players {
+		out.Players = append(out.Players, ToPBPlayer(player))
+	}
+	return out
+}
+
+func FromPBUnit(in *pb.Unit) (out *entity.Unit) { return }
+func ToPBUnit(in *entity.Unit) (out *pb.Unit)   { return }

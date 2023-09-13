@@ -39,7 +39,7 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) *grpcClient {
 	c.dispatchEventToClient = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
 			conn,
-			"conn_pb.WebinarConn",
+			"conn_pb.Conn",
 			"DispatchEventToClient",
 			encodeDispatchEventToClientRequest,
 			decodeDispatchEventToClientReply,
@@ -51,7 +51,7 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) *grpcClient {
 	c.kickClient = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
 			conn,
-			"conn_pb.WebinarConn",
+			"conn_pb.Conn",
 			"KickClient",
 			encodeKickClientRequest,
 			decodeCommonReply,

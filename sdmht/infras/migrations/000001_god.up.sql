@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `god` (
-  `id` bigint unsigned NOT NULL,
+  `id` bigint NOT NULL,
   `name` varchar(50) NOT NULL,
 
   `rarity` int(16) NOT NULL,

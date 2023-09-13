@@ -33,8 +33,8 @@ const (
 	ErrCodeMsgNotImplemented   = 501
 	ErrCodeMsgNotFount         = 701
 
-	ErrClientResTimeout       = "client res time out"
-	ErrPocConnClientNotOnline = "client not on line"
+	ErrClientResTimeout    = "client res time out"
+	ErrConnClientNotOnline = "client not on line"
 
 	ClientDoReqWaitRespTimeout = 5 // 向客户端发起请求并等待响应超时时间 秒
 	//GrpcWaitClientRespTimeout  = ClientDoReqWaitRespTimeout + 2 // grpc服务 要在客户端响应基础+n秒
