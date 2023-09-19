@@ -63,6 +63,38 @@ func (s *grpcServer) Login(ctx context.Context, req *pb.LoginReq) (*pb.LoginRepl
 	return res.(*pb.LoginReply), nil
 }
 
+func (s *grpcServer) NewLineup(ctx context.Context, req *pb.NewLineupReq) (*pb.CommonReply, error) {
+	_, res, err := s.NewLineupHandler.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*pb.CommonReply), nil
+}
+
+func (s *grpcServer) FindLineup(ctx context.Context, req *pb.FindLineupReq) (*pb.FindLineupReply, error) {
+	_, res, err := s.FindLineupHandler.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*pb.FindLineupReply), nil
+}
+
+func (s *grpcServer) UpdateLineup(ctx context.Context, req *pb.UpdateLineupReq) (*pb.CommonReply, error) {
+	_, res, err := s.UpdateLineupHandler.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*pb.CommonReply), nil
+}
+
+func (s *grpcServer) DeleteLineup(ctx context.Context, req *pb.DeleteLineupReq) (*pb.CommonReply, error) {
+	_, res, err := s.DeleteLineupHandler.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*pb.CommonReply), nil
+}
+
 func (s *grpcServer) NewMatch(ctx context.Context, req *pb.NewMatchReq) (*pb.NewMatchReply, error) {
 	_, res, err := s.NewMatchHandler.ServeGRPC(ctx, req)
 	if err != nil {

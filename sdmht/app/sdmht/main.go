@@ -94,7 +94,7 @@ func main() {
 
 	sdmhtSvc := sdmht_svc.NewService(idGenerator, lineupRepo, unitRepo, matchRepo)
 	accountSvc := accountcli.NewClient(sd.FixedInstancer([]string{utils.GetEnvDefault("ACCOUNT_ACCESS_ADDR", "account:7001")}), cliOpts)
-	signalingSvc := sdmht_svc.NewSignalingService(nil, accountSvc, connMgr)
+	signalingSvc := sdmht_svc.NewSignalingService(sdmhtSvc, accountSvc, connMgr)
 	grpcServer := server.NewGRPCServer(signalingSvc, srvOpts)
 	grpcService := grpc.NewServer()
 	signaling_pb.RegisterSignalingServer(grpcService, grpcServer)

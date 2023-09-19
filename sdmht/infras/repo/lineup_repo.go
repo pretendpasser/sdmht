@@ -82,7 +82,7 @@ func (r *lineupRepo) Find(ctx context.Context, query *entity.LineupQuery) (total
 	builder := sq.Select().From(`lineup`)
 	if query != nil {
 		if query.FilterByAccountID != 0 {
-			builder = builder.Where(sq.Eq{"id": query.FilterByAccountID})
+			builder = builder.Where(sq.Eq{"account_id": query.FilterByAccountID})
 		}
 	}
 	builder = builder.OrderBy("id desc")

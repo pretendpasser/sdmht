@@ -1,17 +1,18 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"fmt"
+	"log"
+	"math/rand"
 	"os"
-	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
-	"syscall"
 	"time"
 
-	"sdmht/lib/log"
+	account_entity "sdmht/account/svc/entity"
 	sdmht_entity "sdmht/sdmht/svc/entity"
 	"sdmht/sdmht_conn/svc/entity"
 
@@ -21,10 +22,6 @@ import (
 type HandlerFunc func(c *Client, params interface{})
 
 var cmdList = map[string]HandlerFunc{
-	// "getEvent":       MakeGetEventReq,
-	// "joinEvent":      MakeJoinEventReq,
-	// "leaveEvent":     MakeLeaveEventReq,
-	// "switchspeecher": MakeSwitchSpeecherReq,
 	"login":        MakeLoginReq,
 	"newLineup":    MakeNewLineupReq,
 	"findLineup":   MakeFindLineupReq,
@@ -33,6 +30,12 @@ var cmdList = map[string]HandlerFunc{
 	"newMatch":     MakeNewMatchReq,
 	"keepAlive":    MakeKeepAliveReq,
 }
+
+var (
+	g_account = &account_entity.Account{}
+	g_lineup  = []*sdmht_entity.Lineup{}
+	g_match   = &sdmht_entity.Match{}
+)
 
 func main() {
 	testClient()
@@ -43,20 +46,24 @@ type Client struct {
 	conn *websocket.Conn
 
 	SN              int
-	token           string
 	closeChan       chan struct{}
 	closeWaitChan   chan struct{}
 	sendPayloadChan chan entity.Payload
+	recvPayloadChan chan entity.Payload
+
+	serverReqPayloadChan chan entity.Payload
 }
 
-func NewClient(no int, conn *websocket.Conn, token string) *Client {
+func NewClient(no int, conn *websocket.Conn) *Client {
 	return &Client{
 		NO:              no,
 		conn:            conn,
-		token:           token,
 		closeChan:       make(chan struct{}, 1),
 		closeWaitChan:   make(chan struct{}, 1),
 		sendPayloadChan: make(chan entity.Payload, 10),
+		recvPayloadChan: make(chan entity.Payload, 10),
+
+		serverReqPayloadChan: make(chan entity.Payload, 10),
 	}
 }
 
@@ -100,7 +107,7 @@ func (c *Client) HandleReadMsg() {
 
 		fmt.Println("client[", c.NO, "] recv payload", string(msg))
 
-		payload, err := entity.MsgToPayload(msg)
+		payload, err := entity.RspMsgToPayload(msg)
 		if err != nil {
 			fmt.Println("MsgToPayload err", err)
 			payload.PayloadType = entity.PayloadTypeRsp
@@ -108,17 +115,24 @@ func (c *Client) HandleReadMsg() {
 			c.sendPayloadChan <- payload
 			continue
 		}
+		if payload.PayloadType == entity.PayloadTypeRsp {
+			if _, ok := payload.MsgContent.(*sdmht_entity.CommonRes); !ok {
+				c.recvPayloadChan <- payload
+			}
+		} else {
+			c.serverReqPayloadChan <- payload
+		}
 	}
 }
 
-func (c *Client) handleReqMsg(req entity.Payload) (ret entity.Payload) {
-	ret = entity.NewRespPayload(req, entity.ErrCodeMsgSuccess, "", struct{}{})
-	return
-}
+// func (c *Client) handleReqMsg(req entity.Payload) (ret entity.Payload) {
+// 	ret = entity.NewRespPayload(req, entity.ErrCodeMsgSuccess, "", struct{}{})
+// 	return
+// }
 
-func (c *Client) handleRespMsg(payload entity.Payload) {
-	fmt.Println("handleRespMsg sn:", payload.SN)
-}
+// func (c *Client) handleRespMsg(payload entity.Payload) {
+// 	fmt.Println("handleRespMsg sn:", payload.SN)
+// }
 
 func (c *Client) HandleSendMsg() {
 	for {
@@ -144,85 +158,173 @@ func (c *Client) NewSN() int {
 func testClient() {
 	errChan := make(chan error)
 	fs := flag.NewFlagSet("webinar_conn demo", flag.ExitOnError)
-	// var (
-	// 	token = fs.String("token", "", "token")
-	// 	addr  = fs.String("addr", "localhost:4090", "ws server addr")
-	// )
+	var (
+		addr = fs.String("addr", "localhost:4090", "ws server addr")
+	)
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		panic(err)
 	}
 
-	// wsServerUrl := "ws://" + *addr + "/sdmht"
-	// conn, _, err := websocket.DefaultDialer.Dial(wsServerUrl, nil)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	wsServerUrl := "ws://" + *addr + "/sdmht"
+	conn, _, err := websocket.DefaultDialer.Dial(wsServerUrl, nil)
+	if err != nil {
+		panic(err)
+	}
 
-	// c := NewClient(1, conn, *token)
-	// go c.Run()
+	c := NewClient(1, conn)
+	go c.Run()
+
+	// go func() {
+	// 	for {
+	// 		cmdList["keepAlive"](c, nil)
+	// 		time.Sleep(3 * time.Second)
+	// 	}
+	// }()
+	fmt.Printf("waiting...")
 	go func() {
 		notExit := true
 		for notExit {
 			cmd := ""
-			fmt.Printf("Input cmd > ")
+			time.Sleep(1 * time.Millisecond)
+			fmt.Printf("\nInput cmd > ")
 			fmt.Scanln(&cmd)
 			switch cmd {
 			case "login":
+				wechatID, username := "", ""
+				fmt.Printf("Input login param [wechatID (username)]> ")
+				fmt.Scanln(&wechatID, &username)
+				cmdList[cmd](c, &sdmht_entity.LoginReq{
+					WeChatID: wechatID,
+					UserName: username,
+				})
 			case "newLineup":
+				lineupName, unitsStr := "l1", "11;218;401"
+				cardLibrarys, units := []int64{}, []int64{}
+				// fmt.Printf("Input newLineup param [lineupName unitStr(eg:1;2;3)]> ")
+				// fmt.Scanln(&lineupName, &unitStr)
+				cards := rand.Perm(100)
+				for i := 0; i < 20; i++ {
+					cardLibrarys = append(cardLibrarys, int64(cards[i]))
+				}
+				for _, unitStr := range strings.Split(unitsStr, ";") {
+					unit, _ := strconv.ParseInt(unitStr, 10, 64)
+					units = append(units, unit)
+				}
+				cmdList[cmd](c, &sdmht_entity.NewLineupReq{
+					Lineup: sdmht_entity.Lineup{
+						AccountID:    g_account.ID,
+						Name:         lineupName,
+						CardLibrarys: cardLibrarys,
+						Units:        units,
+					},
+				})
 			case "findLineup":
+				cmdList[cmd](c, &sdmht_entity.FindLineupReq{
+					AccountID: g_account.ID,
+				})
 			case "updateLineup":
+				lineupID, lineupName, unitsStr := uint64(0), "", ""
+				cardLibrarys, units := []int64{}, []int64{}
+				fmt.Printf("Input updateLineup param [lineupID lineupName unitStr(eg:1;2;3)]> ")
+				fmt.Scanln(&lineupID, &lineupName, &unitsStr)
+				cards := rand.Perm(100)
+				for i := 0; i < 20; i++ {
+					cardLibrarys = append(cardLibrarys, int64(cards[i]))
+				}
+				for _, unitStr := range strings.Split(unitsStr, ";") {
+					unit, _ := strconv.ParseInt(unitStr, 10, 64)
+					units = append(units, unit)
+				}
+				cmdList[cmd](c, &sdmht_entity.UpdateLineupReq{
+					Lineup: sdmht_entity.Lineup{
+						ID:           lineupID,
+						AccountID:    g_account.ID,
+						Name:         lineupName,
+						CardLibrarys: cardLibrarys,
+						Units:        units,
+					},
+				})
 			case "deleteLineup":
+				var lineupID uint64 = 0
+				fmt.Printf("Input deleteLineup param [lineupID]> ")
+				fmt.Scanln(&lineupID)
+				cmdList[cmd](c, &sdmht_entity.DeleteLineupReq{
+					ID:        lineupID,
+					AccountID: g_account.ID,
+				})
 			case "newMatch":
-			case "keepAlive":
+			case "help":
+				fmt.Println("following cmd can be used\n" +
+					"|login|\n" +
+					"|newLineup|findLineup|updateLineup|deleteLineup|\n" +
+					"|newMatch|xxx|")
 			case "exit":
 				notExit = false
 				errChan <- errors.New("cmd exit")
+			case "\n", "\r", "":
+				continue
 			default:
-				fmt.Println("invalid cmd!  ", "|", cmd, "|")
+				fmt.Println("invalid cmd!  ", "|", cmd, "|"+
+					"\nfollowing cmd can be used\n"+
+					"|login|\n"+
+					"|newLineup|findLineup|updateLineup|deleteLineup|\n"+
+					"|newMatch|xxx|")
 			}
 		}
 	}()
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	fmt.Println("recv quit signal")
-	defer stop()
-	select {
-	case err := <-errChan:
-		log.S().Errorw("quit", "err", err)
-	case <-ctx.Done():
-		log.S().Info("recv quit signal")
-	}
-	// _ = c.conn.Close()
+	log.Println("quit", "err", <-errChan)
+	_ = c.conn.Close()
 	time.Sleep(1 * time.Second)
 	fmt.Println("quit")
 }
 
-// func MakeGetEventReq(c *Client, _ uint64, _ uint64) {
-// 	payload := entity.NewReqPayload(c.NewSN(), webinar_entity.MsgTypeGetEvents, c.token, webinar_entity.FindRelatedEventReq{
-// 		Begin: 0,
-// 		End:   4828089600,
-// 	})
-// 	c.sendPayloadChan <- payload
-// }
-
-func MakeLoginReq(c *Client, _ interface{}) {
-
+func MakeLoginReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.LoginReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeLogin, r)
+	c.sendPayloadChan <- payload
+	recvPayload := <-c.recvPayloadChan
+	res := recvPayload.MsgContent.(*sdmht_entity.LoginRes)
+	g_account.ID = res.AccountID
 }
 
-func MakeNewLineupReq(c *Client, _ interface{}) {
-
+func MakeNewLineupReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.NewLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewLineup, r)
+	c.sendPayloadChan <- payload
+	MakeFindLineupReq(c, &sdmht_entity.FindLineupReq{
+		AccountID: g_account.ID,
+	})
 }
 
-func MakeFindLineupReq(c *Client, _ interface{}) {
-
+func MakeFindLineupReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.FindLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeFindLineup, r)
+	c.sendPayloadChan <- payload
+	recvPayload := <-c.recvPayloadChan
+	res := recvPayload.MsgContent.(*sdmht_entity.FindLineupRes)
+	g_lineup = res.Lineups
+	fmt.Println("========== Lineups ============")
+	for _, lineup := range g_lineup {
+		fmt.Println(lineup.ID, lineup)
+	}
 }
 
-func MakeUpdateLineupReq(c *Client, _ interface{}) {
-
+func MakeUpdateLineupReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.UpdateLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeUpdateLineup, r)
+	c.sendPayloadChan <- payload
+	MakeFindLineupReq(c, &sdmht_entity.FindLineupReq{
+		AccountID: g_account.ID,
+	})
 }
 
-func MakeDeleteLineupReq(c *Client, _ interface{}) {
-
+func MakeDeleteLineupReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.DeleteLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeDeleteLineup, r)
+	c.sendPayloadChan <- payload
+	// recvPayload := <-c.recvPayloadChan
+	// _ = recvPayload.MsgContent.(*sdmht_entity.CommonRes)
 }
 
 func MakeNewMatchReq(c *Client, _ interface{}) {

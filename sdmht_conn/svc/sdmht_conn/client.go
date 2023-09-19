@@ -56,6 +56,7 @@ func NewClient(conn *websocket.Conn, addr string, notifyClientEvent chan ClientE
 		notifyClientEvent: notifyClientEvent,
 		connMng:           connMng,
 		serverStartTime:   serverStartTime,
+		lastHeartBeatTime: time.Now(),
 		heartBeatInterval: heartBeatInterval,
 	}
 }
@@ -195,7 +196,6 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 		now := time.Now()
 		c.SetInfo(res.AccountID, req.WeChatID)
 		c.SetLoginTime(now)
-		c.SetLastHeartBeatTime()
 		c.notifyClientEvent <- NewClientEvent(ClientEventTypeAdd, c.AccountID(), c)
 		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", res)
 	case sdmht_entity.MsgTypeNewLineup:
@@ -260,7 +260,6 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 		}
 		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", rsp)
 	case sdmht_entity.MsgTypeKeepAlive:
-		c.SetLastHeartBeatTime()
 		req := payload.MsgContent.(*sdmht_entity.KeepAliveReq)
 		req.Operator = c.AccountID()
 		err = c.connMng.KeepAlive(ctx, req)

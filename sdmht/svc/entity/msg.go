@@ -8,19 +8,29 @@ import (
 var MsgTypes = make(map[string]interface{})
 
 const (
-	MsgTypeLogin = "login"
-
+	//res
+	MsgTypeLogin        = "login"
 	MsgTypeNewLineup    = "new_lineup"
 	MsgTypeFindLineup   = "find_lineup"
 	MsgTypeUpdateLineup = "update_lineup"
 	MsgTypeDeleteLineup = "delete_lineup"
+	MsgTypeNewMatch     = "new_match"
+	MsgTypeGetMatch     = "get_match"
+	MsgTypeJoinMatch    = "join_match"
+	MsgTypeSyncMatch    = "sync_match"
+	MsgTypeKeepAlive    = "keep_alive"
 
-	MsgTypeNewMatch  = "new_match"
-	MsgTypeGetMatch  = "get_match"
-	MsgTypeJoinMatch = "join_match"
-	MsgTypeSyncMatch = "sync_match"
-
-	MsgTypeKeepAlive = "keep_alive"
+	//rsp
+	MsgTypeLoginRsp        = "login_rsp"
+	MsgTypeNewLineupRsp    = "new_lineup_rsp"
+	MsgTypeFindLineupRsp   = "find_lineup_rsp"
+	MsgTypeUpdateLineupRsp = "update_lineup_rsp"
+	MsgTypeDeleteLineupRsp = "delete_lineup_rsp"
+	MsgTypeNewMatchRsp     = "new_match_rsp"
+	MsgTypeGetMatchRsp     = "get_match_rsp"
+	MsgTypeJoinMatchRsp    = "join_match_rsp"
+	MsgTypeSyncMatchRsp    = "sync_match_rsp"
+	MsgTypeKeepAliveRsp    = "keep_alive_rsp"
 )
 
 type CommonRes struct{}
@@ -39,6 +49,7 @@ type DispatchEventToClientReply struct {
 }
 
 func init() {
+	// req
 	MsgTypes[MsgTypeLogin] = LoginReq{}
 	MsgTypes[MsgTypeNewLineup] = NewLineupReq{}
 	MsgTypes[MsgTypeFindLineup] = FindLineupReq{}
@@ -48,4 +59,15 @@ func init() {
 	MsgTypes[MsgTypeGetMatch] = GetMatchReq{}
 	MsgTypes[MsgTypeJoinMatch] = JoinMatchReq{}
 	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
+
+	//rsp
+	MsgTypes[MsgTypeLoginRsp] = LoginRes{}
+	MsgTypes[MsgTypeNewLineupRsp] = CommonRes{}
+	MsgTypes[MsgTypeFindLineupRsp] = FindLineupRes{}
+	MsgTypes[MsgTypeUpdateLineupRsp] = CommonRes{}
+	MsgTypes[MsgTypeDeleteLineupRsp] = CommonRes{}
+	MsgTypes[MsgTypeNewMatchRsp] = NewMatchRes{}
+	MsgTypes[MsgTypeGetMatchRsp] = GetMatchRes{}
+	MsgTypes[MsgTypeJoinMatchRsp] = JoinMatchRes{}
+	MsgTypes[MsgTypeKeepAliveRsp] = CommonRes{}
 }

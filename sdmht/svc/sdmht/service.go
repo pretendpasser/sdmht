@@ -44,6 +44,7 @@ func (s *service) CreateLineup(ctx context.Context, lineup *entity.Lineup) error
 		lineup.AccountID = operater
 	}
 
+	lineup.Enabled = true
 	if len(lineup.Units) > 3 || len(lineup.CardLibrarys) > entity.MaxCardLibrary {
 		return lib.NewError(lib.ErrInvalidArgument, "numbers of units or cards is over max")
 	}
@@ -64,15 +65,17 @@ func (s *service) CreateLineup(ctx context.Context, lineup *entity.Lineup) error
 }
 
 func (s *service) FindLineup(ctx context.Context, query *entity.LineupQuery) (int, []*entity.Lineup, error) {
-	operater, ok := mw.GetAccountIDFromContext(ctx)
-	if !ok {
-		log.S().Error("get operator fail when update event")
-		return 0, nil, lib.NewError(lib.ErrInternal, "get account id fail")
+	if query.FilterByAccountID == 0 {
+		operater, ok := mw.GetAccountIDFromContext(ctx)
+		if !ok {
+			log.S().Error("get operator fail when update event")
+			return 0, nil, lib.NewError(lib.ErrInternal, "get account id fail")
+		}
+		query.FilterByAccountID = operater
 	}
-	query.FilterByAccountID = operater
 
 	total, res, err := s.lineupRepo.Find(ctx, query)
-	if res != nil {
+	if err != nil {
 		log.S().Errorw("find lineup fail", "err", err)
 		return 0, nil, err
 	}
@@ -109,6 +112,7 @@ func (s *service) UpdateLineup(ctx context.Context, lineup *entity.Lineup) error
 		lineup.AccountID = operater
 	}
 
+	lineup.Enabled = true
 	if len(lineup.Units) > 3 || len(lineup.CardLibrarys) > entity.MaxCardLibrary {
 		return lib.NewError(lib.ErrInvalidArgument, "numbers of units or cards is over max")
 	}

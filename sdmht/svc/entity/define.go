@@ -25,7 +25,7 @@ type Lineup struct {
 	ID              uint64  `json:"id" db:"id"`
 	AccountID       uint64  `json:"account_id" db:"account_id"`
 	Name            string  `json:"name" db:"name"`
-	Enabled         bool    `json:"-" db:"enabled"`
+	Enabled         bool    `json:"enabled" db:"enabled"`
 	Units           []int64 `json:"units" db:"-"`
 	CardLibrarys    []int64 `json:"card_librarys" db:"-"`
 	UnitsStr        string  `json:"-" db:"units"`
