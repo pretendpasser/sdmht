@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,8 +16,8 @@ import (
 	"sdmht/lib/log"
 	"sdmht/lib/utils"
 	sdmht_client "sdmht/sdmht/api/signaling_grpc/client"
-	apigrpc "sdmht/sdmht_conn/api/grpc"
 	pb "sdmht/sdmht_conn/api/grpc/conn_pb"
+	apigrpc "sdmht/sdmht_conn/api/grpc/server"
 	"sdmht/sdmht_conn/svc/sdmht_conn"
 
 	"github.com/go-kit/kit/sd"
@@ -104,14 +105,16 @@ func main() {
 		if err != nil {
 			log.S().Panic(err)
 		}
-		cfg.ServeAddr = fmt.Sprintf("%s:%d", hostname, 7032)
+		port := strings.Split(cfg.GrpcAddr, ":")
+		cfg.ServeAddr = fmt.Sprintf("%s:%s", hostname, port[1])
 	}
 	log.S().Infof("serveAddr: %s", cfg.ServeAddr)
 
-	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second))
-	instance := []string{cfg.MngAddr}
+	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()),
+		kitx.WithLoadBalance(3, 5*time.Second), kitx.WithMetadata(map[string][]string{"sdmht_conn_addr": {cfg.ServeAddr}}))
 
-	sdmhtMng := sdmht_client.NewClient(sd.FixedInstancer(instance), cliOpts)
+	sdmhtMng := sdmht_client.NewClient(sd.FixedInstancer([]string{cfg.MngAddr}), cliOpts)
+
 	server = sdmht_conn.NewServer(sdmhtMng)
 	srvOpts := kitx.NewServerOptions(
 		kitx.WithLogger(log.GetLogger()),
@@ -120,9 +123,8 @@ func main() {
 		kitx.WithMetrics(nil),
 	)
 
-	grpcService := apigrpc.NewGRPCServer(server, srvOpts)
-
 	grpcServer := grpc.NewServer()
+	grpcService := apigrpc.NewGRPCServer(server, srvOpts)
 	pb.RegisterConnServer(grpcServer, grpcService)
 	grpcListener, err := net.Listen("tcp", cfg.GrpcAddr)
 	if err != nil {

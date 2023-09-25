@@ -92,11 +92,11 @@ func (r *matchRepo) Set(match *entity.Match) {
 	r.matchTimeout[match.ID].Reset(maxMatchTimeout)
 }
 
-func (r *matchRepo) Get(id uint64) (*entity.Match, error) {
+func (r *matchRepo) Get(id uint64) (entity.Match, error) {
 	if r.match[id] == nil {
-		return nil, lib.NewError(lib.ErrNotFound, "match not found")
+		return entity.Match{}, lib.NewError(lib.ErrNotFound, "match not found")
 	}
-	return r.match[id], nil
+	return *r.match[id], nil
 }
 
 func (r *matchRepo) Delete(id uint64) {

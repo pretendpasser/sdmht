@@ -36,12 +36,12 @@ type Unit struct {
 	AttackPrevent bool   `json:"attack_prevent"` // 攻击防止(圣盾)
 	CounterAttack bool   `json:"counter_attack"` // 反击
 	Rebirth       bool   `json:"rebirth"`        // 重生
-	HurtInstead   bool   `json:"hurt_instead"`   // 坚壁
+	HurtInstead   int32  `json:"hurt_instead"`   // 坚壁(保护的单位的id)
 	NoMove        uint32 `json:"no_move"`        // 临时禁止移动
 	NoAttack      uint32 `json:"no_attack"`      // 临时禁止攻击
 	NoCure        uint32 `json:"no_cure"`        // 临时禁止治疗
 
-	ChangeAttact []*TempAttribute `json:"change_attack"` // 临时攻击力变化 [数值]持续时间
+	ChangeAttack []*TempAttribute `json:"change_attack"` // 临时攻击力变化 [数值]持续时间
 	ChangeMove   []*TempAttribute `json:"change_move"`   // 临时移动力变化 [数值]持续时间
 	Hurt         []*TempAttribute `json:"hurt"`          // 创伤层数 [数值]持续时间
 	Cure         []*TempAttribute `json:"cure"`          // 治疗层数 [数值]持续时间

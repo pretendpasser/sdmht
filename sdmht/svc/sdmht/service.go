@@ -267,16 +267,21 @@ func (s *service) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*ent
 	match.Players = append(match.Players, player)
 
 	s.matchRepo.SetAccount(player.ID, match.ID)
-	err = s.matchRepo.Join(match)
+	err = s.matchRepo.Join(&match)
 	if err != nil {
 		log.S().Errorw("JoinMatch: join match fail", "err", err)
 		return nil, err
 	}
 
-	return match, nil
+	return &match, nil
 }
 
 func (s *service) GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.Match, error) {
 	matchID := s.matchRepo.GetAccount(req.AccountID)
-	return s.matchRepo.Get(matchID)
+	match, err := s.matchRepo.Get(matchID)
+	if err != nil {
+		log.S().Errorw("GetMatch: get match fail", "err", err)
+		return nil, err
+	}
+	return &match, nil
 }

@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/sd"
-	"github.com/go-kit/kit/tracing/zipkin"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	"google.golang.org/grpc"
 )
@@ -105,14 +104,9 @@ func (c *grpcClient) Offline(ctx context.Context, req *entity.LogoutReq) error {
 func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingService {
 	c := &grpcClient{}
 
-	tracer := opts.ZipkinTracer()
-
 	options := []grpctransport.ClientOption{
 		grpctransport.ClientBefore(opts.MetadataToGRPC("sdmht")),
 		grpctransport.ClientBefore(opts.SourceToGRPC()),
-	}
-	if tracer != nil {
-		options = append(options, zipkin.GRPCClientTrace(tracer))
 	}
 
 	var serviceName = "signaling_pb.Signaling"

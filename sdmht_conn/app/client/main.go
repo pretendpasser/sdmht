@@ -28,6 +28,8 @@ var cmdList = map[string]HandlerFunc{
 	"updateLineup": MakeUpdateLineupReq,
 	"deleteLineup": MakeDeleteLineupReq,
 	"newMatch":     MakeNewMatchReq,
+	"getMatch":     MakeGetMatchReq,
+	"joinMatch":    MakeJoinMatchReq,
 	"keepAlive":    MakeKeepAliveReq,
 }
 
@@ -83,6 +85,7 @@ func (c *Client) Run() {
 	go func() {
 		defer wg.Done()
 		c.HandleReadMsg()
+		c.HandlerReadReqMsg()
 	}()
 
 	wg.Add(1)
@@ -122,6 +125,19 @@ func (c *Client) HandleReadMsg() {
 		} else {
 			c.serverReqPayloadChan <- payload
 		}
+	}
+}
+
+func (c *Client) HandlerReadReqMsg() {
+	for {
+		payload := <-c.serverReqPayloadChan
+		if payload.MsgType == sdmht_entity.MsgTypeSyncMatch {
+			res := payload.MsgContent.(*sdmht_entity.Match)
+			g_match = res
+			fmt.Println(g_match)
+		}
+		respPayload := entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", &sdmht_entity.CommonRes{})
+		c.sendPayloadChan <- respPayload
 	}
 }
 
@@ -193,15 +209,30 @@ func testClient() {
 				wechatID, username := "", ""
 				fmt.Printf("Input login param [wechatID (username)]> ")
 				fmt.Scanln(&wechatID, &username)
+				if wechatID == "" {
+					wechatID = "1"
+				}
+				if username == "" {
+					username = "default"
+				}
 				cmdList[cmd](c, &sdmht_entity.LoginReq{
 					WeChatID: wechatID,
 					UserName: username,
 				})
+				cmdList["findLineup"](c, &sdmht_entity.FindLineupReq{
+					AccountID: g_account.ID,
+				})
 			case "newLineup":
-				lineupName, unitsStr := "l1", "11;218;401"
+				lineupName, unitsStr := "", ""
 				cardLibrarys, units := []int64{}, []int64{}
-				// fmt.Printf("Input newLineup param [lineupName unitStr(eg:1;2;3)]> ")
-				// fmt.Scanln(&lineupName, &unitStr)
+				fmt.Printf("Input newLineup param [lineupName unitStr(eg:1;2;3)]> ")
+				fmt.Scanln(&lineupName, &unitsStr)
+				if lineupName == "" {
+					lineupName = "l1"
+				}
+				if unitsStr == "" {
+					unitsStr = "11;218;401"
+				}
 				cards := rand.Perm(100)
 				for i := 0; i < 20; i++ {
 					cardLibrarys = append(cardLibrarys, int64(cards[i]))
@@ -253,6 +284,61 @@ func testClient() {
 					AccountID: g_account.ID,
 				})
 			case "newMatch":
+				lineupID := uint64(0)
+				fmt.Printf("Input newMatch param [lineupID]> ")
+				fmt.Scanln(&lineupID)
+
+				var chooseLineup *sdmht_entity.Lineup
+				for _, lineup := range g_lineup {
+					if lineup.ID == lineupID && lineup.Enabled {
+						chooseLineup = lineup
+						break
+					}
+				}
+				if chooseLineup == nil {
+					fmt.Printf("invalid lineup id")
+					break
+				}
+				position := make([]int64, 16)
+				for i, p := range rand.Perm(16)[:3] {
+					position[p] = chooseLineup.Units[i]
+				}
+
+				cmdList[cmd](c, &sdmht_entity.NewMatchReq{
+					AccountID: g_account.ID,
+					LineupID:  lineupID,
+					Positions: position,
+				})
+			case "getMatch":
+				cmdList[cmd](c, &sdmht_entity.GetMatchReq{
+					AccountID: g_account.ID,
+				})
+			case "joinMatch":
+				lineupID, matchID := uint64(0), uint64(0)
+				fmt.Printf("Input newMatch param [lineupID, matchID]> ")
+				fmt.Scanln(&lineupID, &matchID)
+				var chooseLineup *sdmht_entity.Lineup
+				for _, lineup := range g_lineup {
+					if lineup.ID == lineupID && lineup.Enabled {
+						chooseLineup = lineup
+						break
+					}
+				}
+				if chooseLineup == nil {
+					fmt.Printf("invalid lineup id")
+					break
+				}
+				position := make([]int64, 16)
+				for i, p := range rand.Perm(16)[:3] {
+					position[p] = chooseLineup.Units[i]
+				}
+
+				cmdList[cmd](c, &sdmht_entity.JoinMatchReq{
+					AccountID: g_account.ID,
+					MatchID:   matchID,
+					Positions: position,
+					LineupID:  lineupID,
+				})
 			case "help":
 				fmt.Println("following cmd can be used\n" +
 					"|login|\n" +
@@ -302,9 +388,12 @@ func MakeFindLineupReq(c *Client, req interface{}) {
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeFindLineup, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res := recvPayload.MsgContent.(*sdmht_entity.FindLineupRes)
+	res, ok := recvPayload.MsgContent.(*sdmht_entity.FindLineupRes)
+	if !ok {
+		return
+	}
 	g_lineup = res.Lineups
-	fmt.Println("========== Lineups ============")
+	fmt.Println("========== Find Lineups ============")
 	for _, lineup := range g_lineup {
 		fmt.Println(lineup.ID, lineup)
 	}
@@ -323,13 +412,55 @@ func MakeDeleteLineupReq(c *Client, req interface{}) {
 	r := req.(*sdmht_entity.DeleteLineupReq)
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeDeleteLineup, r)
 	c.sendPayloadChan <- payload
-	// recvPayload := <-c.recvPayloadChan
-	// _ = recvPayload.MsgContent.(*sdmht_entity.CommonRes)
 }
 
-func MakeNewMatchReq(c *Client, _ interface{}) {
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatch, &sdmht_entity.NewMatchReq{})
+func MakeNewMatchReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.NewMatchReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatch, r)
 	c.sendPayloadChan <- payload
+	recvPayload := <-c.recvPayloadChan
+	res, ok := recvPayload.MsgContent.(*sdmht_entity.NewMatchRes)
+	if !ok {
+		return
+	}
+	g_match.ID = res.MatchID
+	fmt.Println("========== New Match ============")
+	fmt.Println(g_match.ID)
+}
+
+func MakeGetMatchReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.GetMatchReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeGetMatch, r)
+	c.sendPayloadChan <- payload
+	recvPayload := <-c.recvPayloadChan
+	res, ok := recvPayload.MsgContent.(*sdmht_entity.GetMatchRes)
+	if !ok {
+		return
+	}
+	g_match = &res.Match
+	fmt.Println("========== Get Match ============")
+	fmt.Println(g_match)
+	for _, player := range g_match.Players {
+		fmt.Println(player.ID, player)
+	}
+}
+
+func MakeJoinMatchReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.JoinMatchReq)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeJoinMatch, r)
+	c.sendPayloadChan <- payload
+	recvPayload := <-c.recvPayloadChan
+	fmt.Println(payload)
+	res, ok := recvPayload.MsgContent.(*sdmht_entity.JoinMatchRes)
+	if !ok {
+		return
+	}
+	g_match = &res.Match
+	fmt.Println("========== Join Match ============")
+	fmt.Println(g_match)
+	for _, player := range g_match.Players {
+		fmt.Println(player.ID, player)
+	}
 }
 
 func MakeKeepAliveReq(c *Client, _ interface{}) {

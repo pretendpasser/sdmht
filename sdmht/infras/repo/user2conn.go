@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"sdmht/lib"
+	"sdmht/lib/log"
 	itfs "sdmht/sdmht/svc/interfaces"
 
 	"github.com/go-redis/redis/v8"
@@ -61,9 +62,9 @@ func (r *user2ConnRepo) FindConnNames(ctx context.Context) ([]string, error) {
 	return r.rdb.HVals(ctx, r.key).Result()
 }
 
-func (r *user2ConnRepo) Add(ctx context.Context, id uint64, wechat_id string) error {
-	fmt.Println(r.key, id)
-	_, err := r.rdb.HSet(ctx, r.key, id, wechat_id).Result()
+func (r *user2ConnRepo) Add(ctx context.Context, id uint64, addr string) error {
+	log.S().Infow("conn", "key", r.key, "id", id, "addr", addr)
+	_, err := r.rdb.HSet(ctx, r.key, id, addr).Result()
 	return err
 }
 

@@ -7,27 +7,29 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ConvertAccountFromPB(account *pb.Account) *entity.Account {
-	if account == nil {
+func ConvertAccountFromPB(in *pb.Account) (out *entity.Account) {
+	if in == nil {
 		return nil
 	}
 	return &entity.Account{
-		ID:       account.Id,
-		UserName: account.UserName,
+		ID:          in.GetId(),
+		WeChatID:    in.GetWechatId(),
+		UserName:    in.GetUserName(),
+		CreatedAt:   in.GetCreatedAt().AsTime(),
+		LastLoginAt: in.GetLastLoginAt().AsTime(),
 	}
 }
 
-func ConvertAccountToPB(account *entity.Account) *pb.Account {
-	if account == nil {
+func ConvertAccountToPB(in *entity.Account) (out *pb.Account) {
+	if in == nil {
 		return nil
 	}
 
-	pbAccount := &pb.Account{
-		Id:          account.ID,
-		UserName:    account.UserName,
-		CreatedAt:   timestamppb.New(account.CreatedAt),
-		LastLoginAt: timestamppb.New(account.LastLoginAt),
+	return &pb.Account{
+		Id:          in.ID,
+		WechatId:    in.WeChatID,
+		UserName:    in.UserName,
+		CreatedAt:   timestamppb.New(in.CreatedAt),
+		LastLoginAt: timestamppb.New(in.LastLoginAt),
 	}
-
-	return pbAccount
 }

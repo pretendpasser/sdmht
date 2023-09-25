@@ -84,8 +84,9 @@ func main() {
 		user2ConnRepo = repo.NewUser2ConnRepo("sdmht:user2conn", redisDB)
 	)
 
-	srvOpts := kitx.NewServerOptions(kitx.WithLogger(log.GetLogger()), kitx.WithRateLimit(nil), kitx.WithCircuitBreaker(0), kitx.WithMetrics(nil), kitx.WithZipkinTracer(nil))
-	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second), kitx.WithZipkinTracer(nil))
+	srvOpts := kitx.NewServerOptions(kitx.WithLogger(log.GetLogger()), kitx.WithRateLimit(nil),
+		kitx.WithCircuitBreaker(0), kitx.WithMetrics(nil))
+	cliOpts := kitx.NewClientOptions(kitx.WithLogger(log.GetLogger()), kitx.WithLoadBalance(3, 5*time.Second))
 
 	connMgr := sdmht_svc.NewConnManager(user2ConnRepo, func(connName string) connitfs.ConnService {
 		instance := []string{connName}

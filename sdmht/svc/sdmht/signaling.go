@@ -16,17 +16,17 @@ import (
 )
 
 const (
-	ConnServeAddrKey = "sdmgt_conn_addr"
+	ConnServeAddrKey = "sdmht_conn_addr"
 )
 
-// func getConnServeAddr(ctx context.Context) string {
-// 	if v := ctx.Value(kitx.MetadataKey(ConnServeAddrKey)); v != nil {
-// 		if value, ok := v.([]string); ok {
-// 			return value[0]
-// 		}
-// 	}
-// 	return ""
-// }
+func getConnServeAddr(ctx context.Context) string {
+	if v := ctx.Value(kitx.MetadataKey(ConnServeAddrKey)); v != nil {
+		if value, ok := v.([]string); ok {
+			return value[0]
+		}
+	}
+	return ""
+}
 
 var _ itfs.SignalingService = (*signalingSvc)(nil)
 
@@ -67,7 +67,8 @@ func (s *signalingSvc) Login(ctx context.Context, req *entity.LoginReq) (*entity
 		return nil, err
 	}
 
-	err = s.connManger.User2ConnRepo().Add(ctx, res.Account.ID, res.Account.WeChatID)
+	serveAddr := getConnServeAddr(ctx)
+	err = s.connManger.User2ConnRepo().Add(ctx, res.Account.ID, serveAddr)
 	if err != nil {
 		log.S().Errorw("Login: add user client fail", "err", err)
 		return nil, err
@@ -169,12 +170,15 @@ func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) 
 	}
 	go func(match *entity.Match, data []byte) {
 		accountID := match.Players[0].ID
-		_, _ = cli.DispatchEventToClient(context.TODO(), accountID, entity.ClientEvent{
+		_, err := cli.DispatchEventToClient(context.TODO(), accountID, entity.ClientEvent{
 			AccountID: accountID,
 			Type:      entity.MsgTypeSyncMatch,
 			AtTime:    time.Now(),
 			Content:   data,
 		})
+		if err != nil {
+			log.S().Errorw("JoinEvent", "err", err)
+		}
 	}(match, data)
 
 	return &entity.JoinMatchRes{

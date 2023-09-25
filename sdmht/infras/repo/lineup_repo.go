@@ -49,7 +49,6 @@ func (r *lineupRepo) Create(ctx context.Context, lineup *entity.Lineup) error {
 
 	sql, args, err := builder.ToSql()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 

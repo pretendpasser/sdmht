@@ -125,5 +125,129 @@ func ToPBMatch(in *entity.Match) (out *pb.Match) {
 	return out
 }
 
-func FromPBUnit(in *pb.Unit) (out *entity.Unit) { return }
-func ToPBUnit(in *entity.Unit) (out *pb.Unit)   { return }
+func FromPBUnit(in *pb.Unit) (out *entity.Unit) {
+	if in == nil {
+		return (*entity.Unit)(nil)
+	}
+
+	out = &entity.Unit{
+		Location:      in.GetLocation(),
+		BaseAttribute: *FromPBBaseAttribute(in.GetBaseAttribute()),
+		Health:        in.GetHealth(),
+		Defend:        in.GetDefend(),
+		Move:          in.GetMove(),
+		AttackPrevent: in.GetAttackPrevent(),
+		CounterAttack: in.GetCounterAttack(),
+		Rebirth:       in.GetRebirth(),
+		HurtInstead:   in.GetHurtInstead(),
+		NoMove:        in.GetNoMove(),
+		NoAttack:      in.GetNoAttack(),
+		NoCure:        in.GetNoCure(),
+	}
+	for _, v := range in.GetChangeAttack() {
+		out.ChangeAttack = append(out.ChangeAttack, FromPBTempAttribute(v))
+	}
+	for _, v := range in.GetChangeMove() {
+		out.ChangeMove = append(out.ChangeMove, FromPBTempAttribute(v))
+	}
+	for _, v := range in.GetHurt() {
+		out.Hurt = append(out.Hurt, FromPBTempAttribute(v))
+	}
+	for _, v := range in.GetCure() {
+		out.Cure = append(out.Cure, FromPBTempAttribute(v))
+	}
+
+	return out
+}
+func ToPBUnit(in *entity.Unit) (out *pb.Unit) {
+	if in == nil {
+		return (*pb.Unit)(nil)
+	}
+	out = &pb.Unit{
+		Location:      in.Location,
+		BaseAttribute: ToPBBaseAttribute(&in.BaseAttribute),
+		Health:        in.Health,
+		Defend:        in.Defend,
+		Move:          in.Move,
+		AttackPrevent: in.AttackPrevent,
+		CounterAttack: in.CounterAttack,
+		Rebirth:       in.Rebirth,
+		HurtInstead:   in.HurtInstead,
+		NoMove:        in.NoMove,
+		NoAttack:      in.NoAttack,
+		NoCure:        in.NoCure,
+	}
+	for _, v := range in.ChangeAttack {
+		out.ChangeAttack = append(out.ChangeAttack, ToPBTempAttribute(v))
+	}
+	for _, v := range in.ChangeMove {
+		out.ChangeMove = append(out.ChangeMove, ToPBTempAttribute(v))
+	}
+	for _, v := range in.Hurt {
+		out.Hurt = append(out.Hurt, ToPBTempAttribute(v))
+	}
+	for _, v := range in.Cure {
+		out.Cure = append(out.Cure, ToPBTempAttribute(v))
+	}
+	return out
+}
+
+func FromPBTempAttribute(in *pb.TempAttribute) (out *entity.TempAttribute) {
+	if in == nil {
+		return (*entity.TempAttribute)(nil)
+	}
+	return &entity.TempAttribute{
+		Value:  in.GetValue(),
+		Period: in.GetPeriod(),
+	}
+}
+func ToPBTempAttribute(in *entity.TempAttribute) (out *pb.TempAttribute) {
+	if in == nil {
+		return (*pb.TempAttribute)(nil)
+	}
+	return &pb.TempAttribute{
+		Value:  in.Value,
+		Period: in.Period,
+	}
+}
+
+func FromPBBaseAttribute(in *pb.BaseAttribute) (out *entity.BaseAttribute) {
+	if in == nil {
+		return (*entity.BaseAttribute)(nil)
+	}
+	return &entity.BaseAttribute{
+		ID:           in.GetId(),
+		Name:         in.GetName(),
+		SkillName:    in.GetSkill(),
+		Rarity:       in.GetRarity(),
+		Affiliate:    in.GetAffiliate(),
+		Attack:       in.GetAttack(),
+		MaxDefend:    in.GetMaxDefend(),
+		MaxHealth:    in.GetMaxHealth(),
+		MaxMove:      in.GetMaxMove(),
+		BaseNoMove:   in.GetBaseNoMove(),
+		BaseNoAttack: in.GetBaseNoAttack(),
+		BaseNoCure:   in.GetBaseNoCure(),
+		BaseNoEquip:  in.GetBaseNoEquip(),
+	}
+}
+func ToPBBaseAttribute(in *entity.BaseAttribute) (out *pb.BaseAttribute) {
+	if in == nil {
+		return (*pb.BaseAttribute)(nil)
+	}
+	return &pb.BaseAttribute{
+		Id:           in.ID,
+		Name:         in.Name,
+		Skill:        in.SkillName,
+		Rarity:       in.Rarity,
+		Affiliate:    in.Affiliate,
+		Attack:       in.Attack,
+		MaxDefend:    in.MaxDefend,
+		MaxHealth:    in.MaxHealth,
+		MaxMove:      in.MaxMove,
+		BaseNoMove:   in.BaseNoMove,
+		BaseNoAttack: in.BaseNoAttack,
+		BaseNoCure:   in.BaseNoCure,
+		BaseNoEquip:  in.BaseNoEquip,
+	}
+}

@@ -20,7 +20,7 @@ const (
 	MsgTypeSyncMatch    = "sync_match"
 	MsgTypeKeepAlive    = "keep_alive"
 
-	//rsp
+	// rsp(for decode)
 	MsgTypeLoginRsp        = "login_rsp"
 	MsgTypeNewLineupRsp    = "new_lineup_rsp"
 	MsgTypeFindLineupRsp   = "find_lineup_rsp"
@@ -58,9 +58,10 @@ func init() {
 	MsgTypes[MsgTypeNewMatch] = NewMatchReq{}
 	MsgTypes[MsgTypeGetMatch] = GetMatchReq{}
 	MsgTypes[MsgTypeJoinMatch] = JoinMatchReq{}
+	MsgTypes[MsgTypeSyncMatch] = Match{}
 	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
 
-	//rsp
+	// rsp(for decode)
 	MsgTypes[MsgTypeLoginRsp] = LoginRes{}
 	MsgTypes[MsgTypeNewLineupRsp] = CommonRes{}
 	MsgTypes[MsgTypeFindLineupRsp] = FindLineupRes{}
@@ -69,5 +70,6 @@ func init() {
 	MsgTypes[MsgTypeNewMatchRsp] = NewMatchRes{}
 	MsgTypes[MsgTypeGetMatchRsp] = GetMatchRes{}
 	MsgTypes[MsgTypeJoinMatchRsp] = JoinMatchRes{}
+	MsgTypes[MsgTypeSyncMatchRsp] = CommonRes{}
 	MsgTypes[MsgTypeKeepAliveRsp] = CommonRes{}
 }

@@ -18,7 +18,7 @@ type MatchRepo interface {
 	New(match *entity.Match) error
 	Join(match *entity.Match) error
 	Set(match *entity.Match)
-	Get(id uint64) (*entity.Match, error)
+	Get(id uint64) (entity.Match, error)
 	Delete(id uint64)
 
 	RSet(ctx context.Context, match *entity.Match) error

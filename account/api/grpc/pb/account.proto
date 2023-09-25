@@ -21,8 +21,9 @@ message ErrorReply {
 message account {
     uint64 id                               = 1;
     string user_name                        = 2;
-    google.protobuf.Timestamp created_at    = 3;
-    google.protobuf.Timestamp last_login_at = 4;
+    string wechat_id                        = 3;
+    google.protobuf.Timestamp created_at    = 4;
+    google.protobuf.Timestamp last_login_at = 5;
 }
 
 message RegisterReq{

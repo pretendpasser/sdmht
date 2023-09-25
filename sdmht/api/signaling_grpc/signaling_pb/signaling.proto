@@ -70,7 +70,7 @@ message Unit {
     bool attack_prevent = 6;
     bool counter_attack = 7;
     bool rebirth = 8;
-    bool hurt_instead = 9;
+    int32 hurt_instead = 9;
     uint32 no_move = 10;
     uint32 no_attack = 11;
     uint32 no_cure = 12;

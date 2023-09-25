@@ -12,7 +12,6 @@ import (
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/sd"
-	"github.com/go-kit/kit/tracing/zipkin"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	"google.golang.org/grpc"
 )
@@ -27,19 +26,16 @@ type grpcClient struct {
 func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) *grpcClient {
 	c := &grpcClient{}
 
-	var options []grpctransport.ClientOption
-	options = []grpctransport.ClientOption{
+	options := []grpctransport.ClientOption{
+		grpctransport.ClientBefore(opts.MetadataToGRPC("sdmht")),
 		grpctransport.ClientBefore(jwt.ContextToGRPC()),
 	}
-	tracer := opts.ZipkinTracer()
-	if tracer != nil {
-		options = append(options, zipkin.GRPCClientTrace(tracer))
-	}
 
+	var serviceName = "conn_pb.Conn"
 	c.dispatchEventToClient = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
 			conn,
-			"conn_pb.Conn",
+			serviceName,
 			"DispatchEventToClient",
 			encodeDispatchEventToClientRequest,
 			decodeDispatchEventToClientReply,
@@ -51,7 +47,7 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) *grpcClient {
 	c.kickClient = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
 			conn,
-			"conn_pb.Conn",
+			serviceName,
 			"KickClient",
 			encodeKickClientRequest,
 			decodeCommonReply,
@@ -63,9 +59,9 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) *grpcClient {
 	return c
 }
 
-func (c *grpcClient) DispatchEventToClient(ctx context.Context, catonID uint64,
+func (c *grpcClient) DispatchEventToClient(ctx context.Context, accountID uint64,
 	event sdmht_entity.ClientEvent) (sdmht_entity.DispatchEventToClientReply, error) {
-	log.S().Infow("DispatchEventToClient", "catonID", catonID, "req", event)
+	log.S().Infow("DispatchEventToClient", "accountID", accountID, "req", event)
 	rsp, err := c.dispatchEventToClient(ctx, &event)
 	if err != nil {
 		return sdmht_entity.DispatchEventToClientReply{}, err
