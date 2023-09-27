@@ -1,15 +1,18 @@
 package entity
 
-import "sdmht/lib/utils"
+import (
+	"sdmht/lib/utils"
+)
 
 const (
-	originSquare     = 0
-	squareExposeTime = 3 // 迷雾暴露时间
+	OriginSquare     = 0
+	SquareExposeTime = 3  // 迷雾暴露时间
+	MaxSquares       = 16 // 最大迷雾数
 
-	maxDrawCardTime  = 3  // 抽卡倒计时
-	handCardStartNum = 3  // 起始手牌数
-	handCardMaxNum   = 10 // 手牌最大数
-	drawCardNum      = 3  // 抽牌数
+	MaxDrawCardTime  = 3  // 抽卡倒计时
+	HandCardStartNum = 3  // 起始手牌数
+	HandCardMaxNum   = 10 // 手牌最大数
+	DrawCardNum      = 3  // 抽牌数
 )
 
 type Scene struct {
@@ -21,6 +24,8 @@ type Scene struct {
 	CardLibraries []int64 `json:"card_libraries"`
 	// 牌库为空
 	IsLibraryExpty bool `json:"is_library_empty"`
+	// 牌库空之后的惩罚伤害
+	LibraryExptyHurt int32 `json:"library_empty_hurt"`
 	// 抽卡倒计时
 	DrawCardCountDown int32 `json:"draw_card_count_down"`
 }
@@ -28,32 +33,20 @@ type Scene struct {
 func NewScene(cardLibrarys []int64) *Scene {
 	cardLibraries := utils.SliceRandom(cardLibrarys).([]int64)
 	return &Scene{
-		Squares:           make([]int32, 16),
-		HandCards:         cardLibraries[:handCardStartNum],
-		CardLibraries:     cardLibraries[handCardStartNum:],
-		DrawCardCountDown: maxDrawCardTime,
+		Squares:           make([]int32, MaxSquares),
+		HandCards:         cardLibraries[:HandCardStartNum],
+		CardLibraries:     cardLibraries[HandCardStartNum:],
+		IsLibraryExpty:    false,
+		LibraryExptyHurt:  0,
+		DrawCardCountDown: MaxDrawCardTime,
 	}
 }
 
 func (s *Scene) NextRound() {
-	s.DrawCardCountDown--
-	if s.DrawCardCountDown == 0 && !s.IsLibraryExpty {
-		cardLibraryLength := len(s.CardLibraries)
-		if cardLibraryLength > drawCardNum {
-			s.HandCards = append(s.HandCards, s.CardLibraries[:drawCardNum]...)
-			if len(s.HandCards) > handCardMaxNum {
-				s.HandCards = s.HandCards[:handCardMaxNum]
-			}
-			s.CardLibraries = s.CardLibraries[handCardMaxNum:]
-		} else {
-			s.HandCards = append(s.HandCards, s.CardLibraries[:cardLibraryLength]...)
-			if len(s.HandCards) > handCardMaxNum {
-				s.HandCards = s.HandCards[:handCardMaxNum]
-			}
-			s.CardLibraries = []int64{}
-			s.IsLibraryExpty = true
-		}
+	if s.IsLibraryExpty {
+		s.LibraryExptyHurt += 2
 	}
+	s.WantToDrawCard()
 
 	for i, square := range s.Squares {
 		if square < 0 {
@@ -61,6 +54,31 @@ func (s *Scene) NextRound() {
 		} else if square > 0 {
 			s.Squares[i]--
 		}
+	}
+}
+
+func (s *Scene) WantToDrawCard() {
+	s.DrawCardCountDown--
+	if !s.IsLibraryExpty && s.DrawCardCountDown == 0 {
+		cardLibraryLength := len(s.CardLibraries)
+		if cardLibraryLength > DrawCardNum {
+			s.HandCards = append(s.HandCards, s.CardLibraries[:DrawCardNum]...)
+			if len(s.HandCards) > HandCardMaxNum {
+				s.HandCards = s.HandCards[:HandCardMaxNum]
+			}
+			s.CardLibraries = s.CardLibraries[DrawCardNum:]
+		} else {
+			s.HandCards = append(s.HandCards, s.CardLibraries[:cardLibraryLength]...)
+			if len(s.HandCards) > HandCardMaxNum {
+				s.HandCards = s.HandCards[:HandCardMaxNum]
+			}
+			s.CardLibraries = []int64{}
+			s.IsLibraryExpty = true
+		}
+	}
+
+	if s.DrawCardCountDown == 0 {
+		s.DrawCardCountDown = MaxDrawCardTime
 	}
 }
 
@@ -78,14 +96,14 @@ func (s *Scene) OperatorAllSquare(time int32) {
 			if square != 0 {
 				continue
 			}
-			s.Squares[i] = 3
+			s.Squares[i] = SquareExposeTime
 		}
 	}
 }
 
 // 随机 num 数量的开雾/盖雾
 func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
-	if num > 16 {
+	if num > MaxSquares {
 		return
 	}
 
@@ -116,7 +134,7 @@ func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
 			if len(unexposedAlive) != 0 && len(unexposedNoAlive) != 0 {
 				// 开所有无单位的迷雾
 				for _, square := range unexposedNoAlive {
-					s.Squares[square] = squareExposeTime
+					s.Squares[square] = SquareExposeTime
 				}
 				return
 			}
@@ -124,7 +142,7 @@ func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
 			// 迷雾中全 有/没有 单位
 			// 开全部迷雾
 			for _, square := range unexposed {
-				s.Squares[square] = squareExposeTime
+				s.Squares[square] = SquareExposeTime
 			}
 			return
 		}
@@ -133,7 +151,7 @@ func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
 		if len(unexposedNoAlive) >= num {
 			unexposedNoAlive = utils.SliceRandom(unexposedNoAlive).([]int)
 			for _, square := range unexposedNoAlive[:num] {
-				s.Squares[square] = squareExposeTime
+				s.Squares[square] = SquareExposeTime
 			}
 			return
 		} else {
@@ -144,24 +162,25 @@ func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
 			}
 			unexposedNoAlive = utils.SliceRandom(unexposedNoAlive).([]int)
 			for _, square := range unexposedNoAlive {
-				s.Squares[square] = squareExposeTime
+				s.Squares[square] = SquareExposeTime
 			}
 		}
 	} else {
 		if len(exposed) <= num {
 			for _, square := range exposed {
-				s.Squares[square] = originSquare
+				s.Squares[square] = OriginSquare
 			}
 			return
 		}
 		exposed = utils.SliceRandom(exposed).([]int)
 		for i := 0; i < num; i++ {
-			s.Squares[exposed[i]] = originSquare
+			s.Squares[exposed[i]] = OriginSquare
 		}
 	}
 }
 
-// 获取 num 数量 已开/未开 的迷雾，不足时从另一边取
+// 获取 num 数量 已开/未开的迷雾，不足时从另一边取
+// num 为 0 时，获取所有的  已开/未开 的迷雾
 func (s *Scene) RandomGetSquare(num int, isExpose bool) []int {
 	res := []int{}
 	exposed, unexposed := []int{}, []int{} //已暴露的，未暴露的
@@ -172,6 +191,8 @@ func (s *Scene) RandomGetSquare(num int, isExpose bool) []int {
 			exposed = append(exposed, i)
 		}
 	}
+	exposed = utils.SliceRandom(exposed).([]int)
+	unexposed = utils.SliceRandom(unexposed).([]int)
 
 	if isExpose {
 		if num == 0 {
@@ -181,12 +202,10 @@ func (s *Scene) RandomGetSquare(num int, isExpose bool) []int {
 		if exposedLength == num {
 			res = exposed
 		} else if exposedLength > num {
-			exposed = utils.SliceRandom(exposed).([]int)
 			res = exposed[:num]
 		} else {
 			res = append(res, exposed...)
 			num -= exposedLength
-			unexposed = utils.SliceRandom(unexposed).([]int)
 			res = append(res, unexposed[:num]...)
 		}
 	} else {
@@ -197,14 +216,13 @@ func (s *Scene) RandomGetSquare(num int, isExpose bool) []int {
 		if unexposedLength == num {
 			res = unexposed
 		} else if unexposedLength > num {
-			unexposed = utils.SliceRandom(unexposed).([]int)
 			res = unexposed[:num]
 		} else {
 			res = append(res, unexposed...)
 			num -= unexposedLength
-			exposed = utils.SliceRandom(exposed).([]int)
 			res = append(res, exposed[:num]...)
 		}
 	}
+
 	return res
 }

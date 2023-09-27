@@ -37,7 +37,8 @@ message Scene {
     repeated int64 hand_cards = 2;
     repeated int64 card_libraries = 3;
     bool is_library_expty = 4;
-    int32 draw_card_countdown = 5;
+    int32 library_expty_hurt = 5;
+    int32 draw_card_countdown = 6;
 }
 
 message BaseAttribute {

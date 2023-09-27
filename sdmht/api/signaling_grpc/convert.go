@@ -44,6 +44,7 @@ func FromPBScene(in *pb.Scene) (out *entity.Scene) {
 		HandCards:         in.GetHandCards(),
 		CardLibraries:     in.GetHandCards(),
 		IsLibraryExpty:    in.GetIsLibraryExpty(),
+		LibraryExptyHurt:  in.GetLibraryExptyHurt(),
 		DrawCardCountDown: in.GetDrawCardCountdown(),
 	}
 	return out
@@ -57,6 +58,7 @@ func ToPBScene(in *entity.Scene) (out *pb.Scene) {
 		HandCards:         in.HandCards[:],
 		CardLibraries:     in.CardLibraries[:],
 		IsLibraryExpty:    in.IsLibraryExpty,
+		LibraryExptyHurt:  in.LibraryExptyHurt,
 		DrawCardCountdown: in.DrawCardCountDown,
 	}
 }
