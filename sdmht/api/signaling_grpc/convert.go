@@ -41,8 +41,9 @@ func FromPBScene(in *pb.Scene) (out *entity.Scene) {
 	}
 	out = &entity.Scene{
 		Squares:           in.GetSquares(),
+		UnitsLocation:     in.GetUnitsLocation(),
 		HandCards:         in.GetHandCards(),
-		CardLibraries:     in.GetHandCards(),
+		CardLibraries:     in.GetCardLibraries(),
 		IsLibraryExpty:    in.GetIsLibraryExpty(),
 		LibraryExptyHurt:  in.GetLibraryExptyHurt(),
 		DrawCardCountDown: in.GetDrawCardCountdown(),
@@ -55,6 +56,7 @@ func ToPBScene(in *entity.Scene) (out *pb.Scene) {
 	}
 	return &pb.Scene{
 		Squares:           in.Squares[:],
+		UnitsLocation:     in.UnitsLocation[:],
 		HandCards:         in.HandCards[:],
 		CardLibraries:     in.CardLibraries[:],
 		IsLibraryExpty:    in.IsLibraryExpty,
@@ -68,11 +70,10 @@ func FromPBPlayer(in *pb.Player) (out *entity.Player) {
 		return (*entity.Player)(nil)
 	}
 	out = &entity.Player{
-		ID:     in.GetId(),
-		MyTurn: in.GetMyTurn(),
-		Cost:   in.GetCost(),
-		Scene:  FromPBScene(in.GetScene()),
-		Units:  []*entity.Unit{},
+		ID:    in.GetId(),
+		Cost:  in.GetCost(),
+		Scene: FromPBScene(in.GetScene()),
+		Units: []*entity.Unit{},
 	}
 	for _, unit := range in.GetUnits() {
 		out.Units = append(out.Units, FromPBUnit(unit))
@@ -84,11 +85,10 @@ func ToPBPlayer(in *entity.Player) (out *pb.Player) {
 		return (*pb.Player)(nil)
 	}
 	out = &pb.Player{
-		Id:     in.ID,
-		MyTurn: in.MyTurn,
-		Cost:   in.Cost,
-		Scene:  ToPBScene(in.Scene),
-		Units:  []*pb.Unit{},
+		Id:    in.ID,
+		Cost:  in.Cost,
+		Scene: ToPBScene(in.Scene),
+		Units: []*pb.Unit{},
 	}
 	for _, unit := range in.Units {
 		out.Units = append(out.Units, ToPBUnit(unit))
@@ -101,10 +101,12 @@ func FromPBMatch(in *pb.Match) (out *entity.Match) {
 		return (*entity.Match)(nil)
 	}
 	out = &entity.Match{
-		ID:         in.GetId(),
-		Winner:     in.GetWinner(),
-		CurRoundID: in.GetCurRoundId(),
-		Players:    []*entity.Player{},
+		ID:        in.GetId(),
+		SN:        in.GetSn(),
+		Winner:    in.GetWinner(),
+		WhoseTurn: in.GetWhoseTurn(),
+		CurRound:  in.GetCurRound(),
+		Players:   []*entity.Player{},
 	}
 	for _, player := range in.GetPlayers() {
 		out.Players = append(out.Players, FromPBPlayer(player))
@@ -116,10 +118,12 @@ func ToPBMatch(in *entity.Match) (out *pb.Match) {
 		return (*pb.Match)(nil)
 	}
 	out = &pb.Match{
-		Id:         in.ID,
-		Winner:     in.Winner,
-		CurRoundId: in.CurRoundID,
-		Players:    []*pb.Player{},
+		Id:        in.ID,
+		Sn:        in.SN,
+		Winner:    in.Winner,
+		WhoseTurn: in.WhoseTurn,
+		CurRound:  in.CurRound,
+		Players:   []*pb.Player{},
 	}
 	for _, player := range in.Players {
 		out.Players = append(out.Players, ToPBPlayer(player))
@@ -133,18 +137,18 @@ func FromPBUnit(in *pb.Unit) (out *entity.Unit) {
 	}
 
 	out = &entity.Unit{
-		Location:      in.GetLocation(),
+		// Location:      in.GetLocation(),
 		BaseAttribute: *FromPBBaseAttribute(in.GetBaseAttribute()),
 		Health:        in.GetHealth(),
 		Defend:        in.GetDefend(),
 		Move:          in.GetMove(),
 		AttackPrevent: in.GetAttackPrevent(),
-		CounterAttack: in.GetCounterAttack(),
-		Rebirth:       in.GetRebirth(),
-		HurtInstead:   in.GetHurtInstead(),
-		NoMove:        in.GetNoMove(),
-		NoAttack:      in.GetNoAttack(),
-		NoCure:        in.GetNoCure(),
+		// CounterAttack: in.GetCounterAttack(),
+		// Rebirth:       in.GetRebirth(),
+		HurtInstead: in.GetHurtInstead(),
+		NoMove:      in.GetNoMove(),
+		NoAttack:    in.GetNoAttack(),
+		NoCure:      in.GetNoCure(),
 	}
 	for _, v := range in.GetChangeAttack() {
 		out.ChangeAttack = append(out.ChangeAttack, FromPBTempAttribute(v))
@@ -166,18 +170,18 @@ func ToPBUnit(in *entity.Unit) (out *pb.Unit) {
 		return (*pb.Unit)(nil)
 	}
 	out = &pb.Unit{
-		Location:      in.Location,
+		// Location:      in.Location,
 		BaseAttribute: ToPBBaseAttribute(&in.BaseAttribute),
 		Health:        in.Health,
 		Defend:        in.Defend,
 		Move:          in.Move,
 		AttackPrevent: in.AttackPrevent,
-		CounterAttack: in.CounterAttack,
-		Rebirth:       in.Rebirth,
-		HurtInstead:   in.HurtInstead,
-		NoMove:        in.NoMove,
-		NoAttack:      in.NoAttack,
-		NoCure:        in.NoCure,
+		// CounterAttack: in.CounterAttack,
+		// Rebirth:       in.Rebirth,
+		HurtInstead: in.HurtInstead,
+		NoMove:      in.NoMove,
+		NoAttack:    in.NoAttack,
+		NoCure:      in.NoCure,
 	}
 	for _, v := range in.ChangeAttack {
 		out.ChangeAttack = append(out.ChangeAttack, ToPBTempAttribute(v))
@@ -220,7 +224,6 @@ func FromPBBaseAttribute(in *pb.BaseAttribute) (out *entity.BaseAttribute) {
 	return &entity.BaseAttribute{
 		ID:           in.GetId(),
 		Name:         in.GetName(),
-		SkillName:    in.GetSkill(),
 		Rarity:       in.GetRarity(),
 		Affiliate:    in.GetAffiliate(),
 		Attack:       in.GetAttack(),
@@ -240,7 +243,6 @@ func ToPBBaseAttribute(in *entity.BaseAttribute) (out *pb.BaseAttribute) {
 	return &pb.BaseAttribute{
 		Id:           in.ID,
 		Name:         in.Name,
-		Skill:        in.SkillName,
 		Rarity:       in.Rarity,
 		Affiliate:    in.Affiliate,
 		Attack:       in.Attack,

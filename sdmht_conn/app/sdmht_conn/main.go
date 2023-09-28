@@ -75,8 +75,8 @@ func parseConfig(config *config) {
 	}
 	config.ID = id
 	config.WSListenAddr = utils.GetEnvDefault("WS_LISTEN_ADDR", ":4090")
-	config.GrpcAddr = utils.GetEnvDefault("GRPC_LISTEN_ADDR", ":7090")
-	config.MngAddr = utils.GetEnvDefault("MNG_LISTEN_ADDR", ":8090")
+	config.GrpcAddr = utils.GetEnvDefault("GRPC_LISTEN_ADDR", ":7091")
+	config.MngAddr = utils.GetEnvDefault("MNG_LISTEN_ADDR", ":7090")
 	config.AccountSvcAddr = utils.GetEnvDefault("ACCOUNT_ACCESS_ADDR", ":7001")
 	config.ServeAddr = utils.GetEnvDefault("SERVE_ADDR", "")
 	config.LogLevel = utils.GetEnvDefault("LOG_LEVEL", "info")

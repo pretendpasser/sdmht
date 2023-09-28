@@ -30,13 +30,15 @@ var cmdList = map[string]HandlerFunc{
 	"newMatch":     MakeNewMatchReq,
 	"getMatch":     MakeGetMatchReq,
 	"joinMatch":    MakeJoinMatchReq,
+	"operate":      MakeOperateReq,
 	"keepAlive":    MakeKeepAliveReq,
 }
 
 var (
-	g_account = &account_entity.Account{}
-	g_lineup  = []*sdmht_entity.Lineup{}
-	g_match   = &sdmht_entity.Match{}
+	g_account  = &account_entity.Account{}
+	g_lineup   = []*sdmht_entity.Lineup{}
+	g_match    = &sdmht_entity.Match{}
+	g_playerID = 0
 )
 
 func main() {
@@ -81,10 +83,14 @@ func (c *Client) Run() {
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
-
 	go func() {
 		defer wg.Done()
 		c.HandleReadMsg()
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		c.HandlerReadReqMsg()
 	}()
 
@@ -123,6 +129,14 @@ func (c *Client) HandleReadMsg() {
 				c.recvPayloadChan <- payload
 			}
 		} else {
+			payload, err := entity.MsgToPayload(msg)
+			if err != nil {
+				fmt.Println("MsgToPayload err", err)
+				payload.PayloadType = entity.PayloadTypeRsp
+				payload.Result = entity.NewResult(entity.ErrCodeMsgBadRequest, entity.ErrCodeMsgs[entity.ErrCodeMsgBadRequest])
+				c.sendPayloadChan <- payload
+				continue
+			}
 			c.serverReqPayloadChan <- payload
 		}
 	}
@@ -134,7 +148,7 @@ func (c *Client) HandlerReadReqMsg() {
 		if payload.MsgType == sdmht_entity.MsgTypeSyncMatch {
 			res := payload.MsgContent.(*sdmht_entity.Match)
 			g_match = res
-			fmt.Println(g_match)
+			ShowScene(g_match)
 		}
 		respPayload := entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", &sdmht_entity.CommonRes{})
 		c.sendPayloadChan <- respPayload
@@ -204,6 +218,10 @@ func testClient() {
 			time.Sleep(1 * time.Millisecond)
 			fmt.Printf("\nInput cmd > ")
 			fmt.Scanln(&cmd)
+			if g_match.ID != 0 && cmd != "operate" {
+				fmt.Println("You are in a match. Use 'operate [behave] [fromPlayer] [from] [toPlayer] [to]'")
+				continue
+			}
 			switch cmd {
 			case "login":
 				wechatID, username := "", ""
@@ -339,6 +357,10 @@ func testClient() {
 					Positions: position,
 					LineupID:  lineupID,
 				})
+			case "operate":
+				if g_playerID != int(g_match.WhoseTurn) {
+					fmt.Println("not your turn")
+				}
 			case "help":
 				fmt.Println("following cmd can be used\n" +
 					"|login|\n" +
@@ -424,6 +446,7 @@ func MakeNewMatchReq(c *Client, req interface{}) {
 		return
 	}
 	g_match.ID = res.MatchID
+	g_playerID = 0
 	fmt.Println("========== New Match ============")
 	fmt.Println(g_match.ID)
 }
@@ -439,10 +462,7 @@ func MakeGetMatchReq(c *Client, req interface{}) {
 	}
 	g_match = &res.Match
 	fmt.Println("========== Get Match ============")
-	fmt.Println(g_match)
-	for _, player := range g_match.Players {
-		fmt.Println(player.ID, player)
-	}
+	ShowScene(g_match)
 }
 
 func MakeJoinMatchReq(c *Client, req interface{}) {
@@ -450,20 +470,69 @@ func MakeJoinMatchReq(c *Client, req interface{}) {
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeJoinMatch, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	fmt.Println(payload)
 	res, ok := recvPayload.MsgContent.(*sdmht_entity.JoinMatchRes)
 	if !ok {
 		return
 	}
 	g_match = &res.Match
+	g_playerID = 1
 	fmt.Println("========== Join Match ============")
-	fmt.Println(g_match)
-	for _, player := range g_match.Players {
-		fmt.Println(player.ID, player)
-	}
+	ShowScene(g_match)
+}
+
+func MakeOperateReq(c *Client, req interface{}) {
+	r := req.(*sdmht_entity.SyncOperate)
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeSyncOperator, r)
+	c.sendPayloadChan <- payload
 }
 
 func MakeKeepAliveReq(c *Client, _ interface{}) {
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
 	c.sendPayloadChan <- payload
+	recvPayload := <-c.recvPayloadChan
+	res, ok := recvPayload.MsgContent.(*sdmht_entity.SyncOperateRes)
+	if !ok {
+		return
+	}
+	for i, o := range res.Operates {
+		fmt.Println(i, "| ", o)
+	}
+}
+
+func ShowScene(m *sdmht_entity.Match) {
+	fmt.Println("-------------", m.WhoseTurn, "-------------")
+	for who, player := range m.Players {
+		fmt.Printf("--- %d ---", who)
+		for i, square := range player.Scene.Squares {
+			if i%4 == 0 {
+				fmt.Println()
+			}
+			if square <= 0 {
+				if player.Scene.UnitsLocation[i] != 0 && who == g_playerID {
+					fmt.Printf("■%d\t", player.Scene.UnitsLocation[i])
+				} else {
+					fmt.Printf("■\t")
+				}
+			} else {
+				if player.Scene.UnitsLocation[i] == 0 {
+					fmt.Printf("□\t")
+				} else {
+					fmt.Printf("□%d\t", player.Scene.UnitsLocation[i])
+				}
+			}
+		}
+		fmt.Println()
+		if who == g_playerID {
+			fmt.Println()
+			fmt.Println("library num:", len(player.Scene.CardLibraries),
+				"\tcountdown:", player.Scene.DrawCardCountDown)
+			fmt.Println(player.Scene.HandCards)
+			for _, unit := range player.Units {
+				fmt.Println("\tname:", unit.Name, "\n",
+					"Health:", unit.Health, "\n",
+					"Attack:", unit.Attack, "\n",
+					"move:", unit.Move)
+			}
+		}
+	}
 }

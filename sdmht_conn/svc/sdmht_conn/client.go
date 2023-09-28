@@ -259,6 +259,14 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 			break
 		}
 		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", rsp)
+	case sdmht_entity.MsgTypeSyncOperator:
+		content := payload.MsgContent.(*sdmht_entity.SyncOperate)
+		rsp, err1 := c.connMng.SyncOperate(ctx, content)
+		if err1 != nil {
+			err = err1
+			break
+		}
+		ret = entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", rsp)
 	case sdmht_entity.MsgTypeKeepAlive:
 		req := payload.MsgContent.(*sdmht_entity.KeepAliveReq)
 		req.Operator = c.AccountID()

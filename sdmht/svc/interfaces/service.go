@@ -7,15 +7,17 @@ import (
 )
 
 type Service interface {
-	CreateLineup(ctx context.Context, lineup *entity.Lineup) error
-	FindLineup(ctx context.Context, query *entity.LineupQuery) (int, []*entity.Lineup, error)
-	GetLineup(ctx context.Context, req *entity.GetLineupReq) (*entity.Lineup, error)
-	UpdateLineup(ctx context.Context, lineup *entity.Lineup) error
-	DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error
+	// CreateLineup(ctx context.Context, lineup *entity.Lineup) error
+	// FindLineup(ctx context.Context, query *entity.LineupQuery) (int, []*entity.Lineup, error)
+	// GetLineup(ctx context.Context, req *entity.GetLineupReq) (*entity.Lineup, error)
+	// UpdateLineup(ctx context.Context, lineup *entity.Lineup) error
+	// DeleteLineup(ctx context.Context, req *entity.DeleteLineupReq) error
 
-	NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64, error)
-	JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.Match, error)
-	GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.Match, error)
+	// NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64, error)
+	// JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.Match, error)
+	// GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.Match, error)
+
+	// SyncOperate(ctx context.Context, req *entity.SyncOperate) (*entity.SyncOperateRes, error)
 }
 type SignalingService interface {
 	Login(ctx context.Context, req *entity.LoginReq) (*entity.LoginRes, error)
@@ -30,4 +32,6 @@ type SignalingService interface {
 	NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error)
 	JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error)
 	GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.GetMatchRes, error)
+
+	SyncOperate(ctx context.Context, req *entity.SyncOperate) (*entity.SyncOperateRes, error)
 }

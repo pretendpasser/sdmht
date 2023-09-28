@@ -47,11 +47,11 @@ func NewMatchRepo(key string, rdb *redis.Client) *matchRepo {
 //	Memory Cache
 //
 // ------------------------
-func (r *matchRepo) SetAccount(accountID uint64, matchID uint64) {
+func (r *matchRepo) SetByAccount(accountID uint64, matchID uint64) {
 	r.account[accountID] = matchID
 }
 
-func (r *matchRepo) GetAccount(accountID uint64) (matchID uint64) {
+func (r *matchRepo) GetByAccount(accountID uint64) (matchID uint64) {
 	return r.account[accountID]
 }
 

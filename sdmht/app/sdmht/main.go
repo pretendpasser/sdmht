@@ -78,8 +78,9 @@ func main() {
 
 	var (
 		idGenerator   = seq.New()
+		skillRepo     = repo.NewSkillRepo()
 		lineupRepo    = repo.NewLineupRepo(db)
-		unitRepo      = repo.NewUnitRepo(db)
+		unitRepo      = repo.NewUnitRepo(db, *skillRepo)
 		matchRepo     = repo.NewMatchRepo("sdmht:match", redisDB)
 		user2ConnRepo = repo.NewUser2ConnRepo("sdmht:user2conn", redisDB)
 	)
@@ -93,9 +94,9 @@ func main() {
 		return conncli.NewClient(sd.FixedInstancer(instance), cliOpts)
 	})
 
-	sdmhtSvc := sdmht_svc.NewService(idGenerator, lineupRepo, unitRepo, matchRepo)
+	sdmhtSvc := sdmht_svc.NewService()
 	accountSvc := accountcli.NewClient(sd.FixedInstancer([]string{utils.GetEnvDefault("ACCOUNT_ACCESS_ADDR", "account:7001")}), cliOpts)
-	signalingSvc := sdmht_svc.NewSignalingService(sdmhtSvc, accountSvc, connMgr)
+	signalingSvc := sdmht_svc.NewSignalingService(idGenerator, lineupRepo, unitRepo, matchRepo, accountSvc, connMgr)
 	grpcServer := server.NewGRPCServer(signalingSvc, srvOpts)
 	grpcService := grpc.NewServer()
 	signaling_pb.RegisterSignalingServer(grpcService, grpcServer)

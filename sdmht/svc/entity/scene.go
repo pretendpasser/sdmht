@@ -9,15 +9,18 @@ const (
 	SquareExposeTime = 3  // 迷雾暴露时间
 	MaxSquares       = 16 // 最大迷雾数
 
-	MaxDrawCardTime  = 3  // 抽卡倒计时
-	HandCardStartNum = 3  // 起始手牌数
-	HandCardMaxNum   = 10 // 手牌最大数
-	DrawCardNum      = 3  // 抽牌数
+	MaxCostNum        = 10 // 费用最大值
+	DefaultAttachCost = 3  //
+	MaxDrawCardTime   = 3  // 抽卡倒计时
+	HandCardStartNum  = 3  // 起始手牌数
+	HandCardMaxNum    = 10 // 手牌最大数
+	DrawCardNum       = 3  // 抽牌数
 )
 
 type Scene struct {
 	// 0:迷雾;+x为回到迷雾的倒计时;-x为不可开启的迷雾持续时间
-	Squares []int32 `json:"squares"`
+	Squares       []int32 `json:"squares"`
+	UnitsLocation []int64 `json:"units_location"`
 	// 手牌 存牌的编号
 	HandCards []int64 `json:"hand_cards"`
 	// 牌库 存牌的编号
@@ -28,21 +31,26 @@ type Scene struct {
 	LibraryExptyHurt int32 `json:"library_empty_hurt"`
 	// 抽卡倒计时
 	DrawCardCountDown int32 `json:"draw_card_count_down"`
+	// 费用
+	Cost int32 `json:"cost"`
 }
 
-func NewScene(cardLibrarys []int64) *Scene {
+func NewScene(cardLibrarys []int64, unitsLocation []int64) *Scene {
 	cardLibraries := utils.SliceRandom(cardLibrarys).([]int64)
 	return &Scene{
 		Squares:           make([]int32, MaxSquares),
+		UnitsLocation:     unitsLocation,
 		HandCards:         cardLibraries[:HandCardStartNum],
 		CardLibraries:     cardLibraries[HandCardStartNum:],
 		IsLibraryExpty:    false,
 		LibraryExptyHurt:  0,
 		DrawCardCountDown: MaxDrawCardTime,
+		Cost:              MaxCostNum,
 	}
 }
 
 func (s *Scene) NextRound() {
+	s.Cost = MaxCostNum
 	if s.IsLibraryExpty {
 		s.LibraryExptyHurt += 2
 	}

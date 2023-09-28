@@ -26,6 +26,7 @@ type grpcClient struct {
 	NewMatchEndpoint     endpoint.Endpoint
 	GetMatchEndpoint     endpoint.Endpoint
 	JoinMatchEndpoint    endpoint.Endpoint
+	SyncOperateEndpoint  endpoint.Endpoint
 	KeepAliveEndpoint    endpoint.Endpoint
 	OfflineEndpoint      endpoint.Endpoint
 }
@@ -83,6 +84,14 @@ func (c *grpcClient) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*
 		return nil, err
 	}
 	return res.(*entity.JoinMatchRes), nil
+}
+
+func (c *grpcClient) SyncOperate(ctx context.Context, req *entity.SyncOperate) (*entity.SyncOperateRes, error) {
+	res, err := c.SyncOperateEndpoint(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*entity.SyncOperateRes), nil
 }
 
 func (c *grpcClient) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
@@ -198,6 +207,17 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.JoinMatch"
 	}, opts)
+	c.SyncOperateEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
+		return grpctransport.NewClient(
+			conn,
+			serviceName,
+			"SyncOperate",
+			enSyncOperateReq,
+			deCommonReply,
+			pb.CommonReply{},
+			options...,
+		).Endpoint(), "sdmht.signaling.rpc.SyncOperate"
+	}, opts)
 	c.KeepAliveEndpoint = kitx.GRPCClientEndpoint(instancer, func(conn *grpc.ClientConn) (endpoint.Endpoint, string) {
 		return grpctransport.NewClient(
 			conn,
@@ -220,6 +240,5 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.Logout"
 	}, opts)
-
 	return c
 }

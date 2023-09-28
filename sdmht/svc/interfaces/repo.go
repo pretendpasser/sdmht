@@ -12,8 +12,8 @@ type UnitRepo interface {
 }
 
 type MatchRepo interface {
-	SetAccount(accountID uint64, matchID uint64)
-	GetAccount(accountID uint64) (matchID uint64)
+	SetByAccount(accountID uint64, matchID uint64)
+	GetByAccount(accountID uint64) (matchID uint64)
 
 	New(match *entity.Match) error
 	Join(match *entity.Match) error
