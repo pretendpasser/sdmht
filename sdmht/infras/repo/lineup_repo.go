@@ -109,7 +109,8 @@ func (r *lineupRepo) Find(ctx context.Context, query *entity.LineupQuery) (total
 	}
 
 	for i := range res {
-		units, cardLibrarys := strings.Split(res[i].UnitsStr, ";"), strings.Split(res[i].CardLibrarysStr, ";")
+		units := strings.Split(res[i].UnitsStr, ";")
+		cardLibrarys := strings.Split(res[i].CardLibrarysStr, ";")
 		for _, unit := range units {
 			tmp, _ := strconv.ParseInt(unit, 10, 64)
 			res[i].Units = append(res[i].Units, tmp)

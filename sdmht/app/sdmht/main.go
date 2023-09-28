@@ -78,8 +78,9 @@ func main() {
 
 	var (
 		idGenerator   = seq.New()
+		skillRepo     = repo.NewSkillRepo()
 		lineupRepo    = repo.NewLineupRepo(db)
-		unitRepo      = repo.NewUnitRepo(db)
+		unitRepo      = repo.NewUnitRepo(db, *skillRepo)
 		matchRepo     = repo.NewMatchRepo("sdmht:match", redisDB)
 		user2ConnRepo = repo.NewUser2ConnRepo("sdmht:user2conn", redisDB)
 	)

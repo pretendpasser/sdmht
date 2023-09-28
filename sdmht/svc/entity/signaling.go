@@ -65,17 +65,6 @@ type JoinMatchRes struct {
 	Match
 }
 
-// type JoinMatchReq struct {
-// 	Operator   uint64 `json:"operator"`
-// 	MatchID    uint64 `json:"match_id"`
-// 	CardConfig uint64 `json:"card_config"`
-// }
-
-// type JoinMatchRes struct {
-// 	Operator   uint64 `json:"operator"`
-// 	CardConfig uint64 `json:"card_config"`
-// }
-
 type KeepAliveReq struct {
 	Operator uint64 `json:"operator"`
 }

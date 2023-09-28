@@ -30,4 +30,6 @@ type SignalingService interface {
 	NewMatch(ctx context.Context, req *entity.NewMatchReq) (*entity.NewMatchRes, error)
 	JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*entity.JoinMatchRes, error)
 	GetMatch(ctx context.Context, req *entity.GetMatchReq) (*entity.GetMatchRes, error)
+
+	SyncOperator(ctx context.Context, req *entity.SyncOperator) error
 }

@@ -34,9 +34,10 @@ var cmdList = map[string]HandlerFunc{
 }
 
 var (
-	g_account = &account_entity.Account{}
-	g_lineup  = []*sdmht_entity.Lineup{}
-	g_match   = &sdmht_entity.Match{}
+	g_account  = &account_entity.Account{}
+	g_lineup   = []*sdmht_entity.Lineup{}
+	g_match    = &sdmht_entity.Match{}
+	g_playerID = 0
 )
 
 func main() {
@@ -81,10 +82,14 @@ func (c *Client) Run() {
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
-
 	go func() {
 		defer wg.Done()
 		c.HandleReadMsg()
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		c.HandlerReadReqMsg()
 	}()
 
@@ -123,6 +128,14 @@ func (c *Client) HandleReadMsg() {
 				c.recvPayloadChan <- payload
 			}
 		} else {
+			payload, err := entity.MsgToPayload(msg)
+			if err != nil {
+				fmt.Println("MsgToPayload err", err)
+				payload.PayloadType = entity.PayloadTypeRsp
+				payload.Result = entity.NewResult(entity.ErrCodeMsgBadRequest, entity.ErrCodeMsgs[entity.ErrCodeMsgBadRequest])
+				c.sendPayloadChan <- payload
+				continue
+			}
 			c.serverReqPayloadChan <- payload
 		}
 	}
@@ -134,7 +147,7 @@ func (c *Client) HandlerReadReqMsg() {
 		if payload.MsgType == sdmht_entity.MsgTypeSyncMatch {
 			res := payload.MsgContent.(*sdmht_entity.Match)
 			g_match = res
-			fmt.Println(g_match)
+			ShowScene(g_match)
 		}
 		respPayload := entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", &sdmht_entity.CommonRes{})
 		c.sendPayloadChan <- respPayload
@@ -424,6 +437,7 @@ func MakeNewMatchReq(c *Client, req interface{}) {
 		return
 	}
 	g_match.ID = res.MatchID
+	g_playerID = 0
 	fmt.Println("========== New Match ============")
 	fmt.Println(g_match.ID)
 }
@@ -439,10 +453,7 @@ func MakeGetMatchReq(c *Client, req interface{}) {
 	}
 	g_match = &res.Match
 	fmt.Println("========== Get Match ============")
-	fmt.Println(g_match)
-	for _, player := range g_match.Players {
-		fmt.Println(player.ID, player)
-	}
+	ShowScene(g_match)
 }
 
 func MakeJoinMatchReq(c *Client, req interface{}) {
@@ -456,14 +467,42 @@ func MakeJoinMatchReq(c *Client, req interface{}) {
 		return
 	}
 	g_match = &res.Match
+	g_playerID = 1
 	fmt.Println("========== Join Match ============")
-	fmt.Println(g_match)
-	for _, player := range g_match.Players {
-		fmt.Println(player.ID, player)
-	}
+	ShowScene(g_match)
 }
 
 func MakeKeepAliveReq(c *Client, _ interface{}) {
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
 	c.sendPayloadChan <- payload
+}
+
+func ShowScene(m *sdmht_entity.Match) {
+	fmt.Println("-------------", m.WhoseTurn, "-------------")
+	for who, player := range m.Players {
+		fmt.Printf("--- %d ---", who)
+		for i, square := range player.Scene.Squares {
+			if i%4 == 0 {
+				fmt.Println()
+			}
+			if square <= 0 {
+				if player.Scene.UnitsLocation[i] != 0 && who == g_playerID {
+					fmt.Printf("■%d\t", player.Scene.UnitsLocation[i])
+				} else {
+					fmt.Printf("■\t")
+				}
+			} else {
+				if player.Scene.UnitsLocation[i] == 0 {
+					fmt.Printf("□\t")
+				} else {
+					fmt.Printf("□%d\t", player.Scene.UnitsLocation[i])
+				}
+			}
+		}
+		fmt.Println()
+		if who == g_playerID {
+			fmt.Println(player.Scene.HandCards)
+			fmt.Println(player.Scene.CardLibraries)
+		}
+	}
 }

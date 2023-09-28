@@ -17,7 +17,8 @@ const (
 
 type Scene struct {
 	// 0:迷雾;+x为回到迷雾的倒计时;-x为不可开启的迷雾持续时间
-	Squares []int32 `json:"squares"`
+	Squares       []int32 `json:"squares"`
+	UnitsLocation []int64 `json:"units_location"`
 	// 手牌 存牌的编号
 	HandCards []int64 `json:"hand_cards"`
 	// 牌库 存牌的编号
@@ -30,10 +31,11 @@ type Scene struct {
 	DrawCardCountDown int32 `json:"draw_card_count_down"`
 }
 
-func NewScene(cardLibrarys []int64) *Scene {
+func NewScene(cardLibrarys []int64, unitsLocation []int64) *Scene {
 	cardLibraries := utils.SliceRandom(cardLibrarys).([]int64)
 	return &Scene{
 		Squares:           make([]int32, MaxSquares),
+		UnitsLocation:     unitsLocation,
 		HandCards:         cardLibraries[:HandCardStartNum],
 		CardLibraries:     cardLibraries[HandCardStartNum:],
 		IsLibraryExpty:    false,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sdmht/lib"
+	"strings"
 
 	"sdmht/sdmht/svc/entity"
 	itfs "sdmht/sdmht/svc/interfaces"
@@ -15,12 +16,14 @@ import (
 var _ itfs.UnitRepo = (*unitRepo)(nil)
 
 type unitRepo struct {
-	db *sqlx.DB
+	db        *sqlx.DB
+	skillRepo SkillRepo
 }
 
-func NewUnitRepo(db *sqlx.DB) *unitRepo {
+func NewUnitRepo(db *sqlx.DB, skillRepo SkillRepo) *unitRepo {
 	return &unitRepo{
-		db: db,
+		db:        db,
+		skillRepo: skillRepo,
 	}
 }
 
@@ -36,12 +39,24 @@ func (r *unitRepo) Get(ctx context.Context, ids []int64) ([]*entity.Unit, error)
 
 	cmd := fmt.Sprintf(`SELECT * FROM god WHERE id in (%s)`, filter)
 
-	var rets []*entity.Unit
-	err := r.db.SelectContext(ctx, &rets, cmd)
+	var units []*entity.Unit
+	err := r.db.SelectContext(ctx, &units, cmd)
 	if err != nil {
 		return nil, err
 	}
-	return rets, nil
+
+	for i, unit := range units {
+		units[i].Skills = make(map[string]*entity.Skill)
+		skillNames := strings.Split(unit.SkillName, ";")
+		for _, skillName := range skillNames {
+			units[i].Skills[skillName] = &entity.Skill{
+				Desc:    r.skillRepo.Get(skillName),
+				Handler: r.skillRepo.Checking(skillName),
+			}
+		}
+	}
+
+	return units, nil
 }
 
 func (r *unitRepo) Find(ctx context.Context, query *entity.UnitQuery) (total int, units []*entity.Unit, err error) {
@@ -83,6 +98,17 @@ func (r *unitRepo) Find(ctx context.Context, query *entity.UnitQuery) (total int
 	}
 	if err := r.db.SelectContext(ctx, &units, sql, args...); err != nil {
 		return 0, nil, err
+	}
+
+	for i, unit := range units {
+		units[i].Skills = make(map[string]*entity.Skill)
+		skillNames := strings.Split(unit.SkillName, ";")
+		for _, skillName := range skillNames {
+			units[i].Skills[skillName] = &entity.Skill{
+				Desc:    r.skillRepo.Get(skillName),
+				Handler: r.skillRepo.Checking(skillName),
+			}
+		}
 	}
 
 	return total, units, nil

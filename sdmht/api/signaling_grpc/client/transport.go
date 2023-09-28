@@ -124,6 +124,11 @@ func deJoinMatchReply(_ context.Context, response interface{}) (interface{}, err
 	}, nil
 }
 
+func enSyncOperatorReq(_ context.Context, request interface{}) (interface{}, error) {
+	_ = request.(*entity.SyncOperator)
+	return &pb.SyncOperatorReq{}, nil
+}
+
 func enKeepAliveReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*entity.KeepAliveReq)
 	return &pb.KeepAliveReq{

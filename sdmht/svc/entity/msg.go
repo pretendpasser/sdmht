@@ -18,6 +18,7 @@ const (
 	MsgTypeGetMatch     = "get_match"
 	MsgTypeJoinMatch    = "join_match"
 	MsgTypeSyncMatch    = "sync_match"
+	MsgTypeSyncOperator = "sync_operator"
 	MsgTypeKeepAlive    = "keep_alive"
 
 	// rsp(for decode)
@@ -30,6 +31,7 @@ const (
 	MsgTypeGetMatchRsp     = "get_match_rsp"
 	MsgTypeJoinMatchRsp    = "join_match_rsp"
 	MsgTypeSyncMatchRsp    = "sync_match_rsp"
+	MsgTypeSyncOperatorRsp = "sync_operator_rsp"
 	MsgTypeKeepAliveRsp    = "keep_alive_rsp"
 )
 
@@ -59,6 +61,7 @@ func init() {
 	MsgTypes[MsgTypeGetMatch] = GetMatchReq{}
 	MsgTypes[MsgTypeJoinMatch] = JoinMatchReq{}
 	MsgTypes[MsgTypeSyncMatch] = Match{}
+	MsgTypes[MsgTypeSyncOperator] = SyncOperator{}
 	MsgTypes[MsgTypeKeepAlive] = KeepAliveReq{}
 
 	// rsp(for decode)
@@ -70,6 +73,6 @@ func init() {
 	MsgTypes[MsgTypeNewMatchRsp] = NewMatchRes{}
 	MsgTypes[MsgTypeGetMatchRsp] = GetMatchRes{}
 	MsgTypes[MsgTypeJoinMatchRsp] = JoinMatchRes{}
-	MsgTypes[MsgTypeSyncMatchRsp] = CommonRes{}
+	MsgTypes[MsgTypeSyncOperatorRsp] = CommonRes{}
 	MsgTypes[MsgTypeKeepAliveRsp] = CommonRes{}
 }

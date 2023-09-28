@@ -186,6 +186,20 @@ func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) 
 	}, nil
 }
 
+func (s *signalingSvc) SyncOperator(ctx context.Context, req *entity.SyncOperator) error {
+	switch req.Event {
+	case entity.OpEventAttack:
+	case entity.OpEventMove:
+	case entity.OpEventCard:
+	case entity.OpEventSkill:
+	case entity.OpEventEndRound:
+	default:
+		log.S().Errorw("SyncOperator", "req", req)
+		return lib.NewError(lib.ErrInvalidArgument, "invalid operator")
+	}
+	return nil
+}
+
 func (s *signalingSvc) KeepAlive(ctx context.Context, req *entity.KeepAliveReq) error {
 	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
 	slog.Infow("KeepAlive:Req", "params", req)

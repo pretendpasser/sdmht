@@ -183,13 +183,10 @@ func (s *service) NewMatch(ctx context.Context, req *entity.NewMatchReq) (uint64
 		log.S().Errorw("NewMatch get units fail", "err", err)
 		return 0, err
 	}
-	for i, unit := range units {
-		units[i].Location = unitsLocation[unit.ID]
-	}
 
 	player := &entity.Player{}
 	player.ID = req.AccountID
-	player.Scene = entity.NewScene(lineup.CardLibrarys)
+	player.Scene = entity.NewScene(lineup.CardLibrarys, req.Positions)
 	player.Units = units
 
 	match := &entity.Match{}
@@ -238,13 +235,10 @@ func (s *service) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*ent
 		log.S().Errorw("NewMatch get units fail", "err", err)
 		return nil, err
 	}
-	for i, unit := range units {
-		units[i].Location = unitsLocation[unit.ID]
-	}
 
 	player := &entity.Player{}
 	player.ID = req.AccountID
-	player.Scene = entity.NewScene(lineup.CardLibrarys)
+	player.Scene = entity.NewScene(lineup.CardLibrarys, req.Positions)
 	player.Units = units
 
 	match, err := s.matchRepo.Get(req.MatchID)
@@ -257,13 +251,7 @@ func (s *service) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) (*ent
 		return nil, lib.NewError(lib.ErrInternal, "match is already full")
 	}
 
-	if rand.Perm(2)[0] == 1 {
-		player.MyTurn = true
-		match.Players[0].MyTurn = false
-	} else {
-		player.MyTurn = false
-		match.Players[0].MyTurn = true
-	}
+	match.WhoseTurn = int32(rand.Perm(2)[0])
 	match.Players = append(match.Players, player)
 
 	s.matchRepo.SetAccount(player.ID, match.ID)

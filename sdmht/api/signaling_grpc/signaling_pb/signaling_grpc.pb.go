@@ -26,6 +26,7 @@ type SignalingClient interface {
 	NewMatch(ctx context.Context, in *NewMatchReq, opts ...grpc.CallOption) (*NewMatchReply, error)
 	GetMatch(ctx context.Context, in *GetMatchReq, opts ...grpc.CallOption) (*GetMatchReply, error)
 	JoinMatch(ctx context.Context, in *JoinMatchReq, opts ...grpc.CallOption) (*JoinMatchReply, error)
+	SyncOperator(ctx context.Context, in *SyncOperatorReq, opts ...grpc.CallOption) (*CommonReply, error)
 	KeepAlive(ctx context.Context, in *KeepAliveReq, opts ...grpc.CallOption) (*CommonReply, error)
 	Offline(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*CommonReply, error)
 }
@@ -110,6 +111,15 @@ func (c *signalingClient) JoinMatch(ctx context.Context, in *JoinMatchReq, opts 
 	return out, nil
 }
 
+func (c *signalingClient) SyncOperator(ctx context.Context, in *SyncOperatorReq, opts ...grpc.CallOption) (*CommonReply, error) {
+	out := new(CommonReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/SyncOperator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *signalingClient) KeepAlive(ctx context.Context, in *KeepAliveReq, opts ...grpc.CallOption) (*CommonReply, error) {
 	out := new(CommonReply)
 	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/KeepAlive", in, out, opts...)
@@ -140,6 +150,7 @@ type SignalingServer interface {
 	NewMatch(context.Context, *NewMatchReq) (*NewMatchReply, error)
 	GetMatch(context.Context, *GetMatchReq) (*GetMatchReply, error)
 	JoinMatch(context.Context, *JoinMatchReq) (*JoinMatchReply, error)
+	SyncOperator(context.Context, *SyncOperatorReq) (*CommonReply, error)
 	KeepAlive(context.Context, *KeepAliveReq) (*CommonReply, error)
 	Offline(context.Context, *LogoutReq) (*CommonReply, error)
 	mustEmbedUnimplementedSignalingServer()
@@ -172,6 +183,9 @@ func (UnimplementedSignalingServer) GetMatch(context.Context, *GetMatchReq) (*Ge
 }
 func (UnimplementedSignalingServer) JoinMatch(context.Context, *JoinMatchReq) (*JoinMatchReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JoinMatch not implemented")
+}
+func (UnimplementedSignalingServer) SyncOperator(context.Context, *SyncOperatorReq) (*CommonReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SyncOperator not implemented")
 }
 func (UnimplementedSignalingServer) KeepAlive(context.Context, *KeepAliveReq) (*CommonReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method KeepAlive not implemented")
@@ -336,6 +350,24 @@ func _Signaling_JoinMatch_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Signaling_SyncOperator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncOperatorReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).SyncOperator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/signaling_pb.Signaling/SyncOperator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).SyncOperator(ctx, req.(*SyncOperatorReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Signaling_KeepAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(KeepAliveReq)
 	if err := dec(in); err != nil {
@@ -410,6 +442,10 @@ var Signaling_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "JoinMatch",
 			Handler:    _Signaling_JoinMatch_Handler,
+		},
+		{
+			MethodName: "SyncOperator",
+			Handler:    _Signaling_SyncOperator_Handler,
 		},
 		{
 			MethodName: "KeepAlive",
