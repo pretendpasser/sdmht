@@ -15,12 +15,13 @@ type SyncOperate struct {
 	MatchID  uint64 `json:"match_id"`
 	Operator int32  `json:"operator"` // player index: [0 1]
 	Event    string `json:"event"`
-	From     int    `json:"from"`
-	To       int    `json:"to"`
+	From     int64  `json:"from"`
+	To       int64  `json:"to"`
 }
 
 type SyncOperateRes struct {
-	Operates []*SyncOperate
+	Match
+	// Operates []*SyncOperate
 }
 
 type SkillChecking struct {

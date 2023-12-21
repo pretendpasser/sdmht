@@ -19,6 +19,7 @@ import (
 	"sdmht/sdmht/api/signaling_grpc/server"
 	signaling_pb "sdmht/sdmht/api/signaling_grpc/signaling_pb"
 	"sdmht/sdmht/infras/repo"
+	"sdmht/sdmht/svc/entity"
 	sdmht_svc "sdmht/sdmht/svc/sdmht"
 	conncli "sdmht/sdmht_conn/api/grpc/client"
 	connitfs "sdmht/sdmht_conn/svc/interfaces"
@@ -78,7 +79,7 @@ func main() {
 
 	var (
 		idGenerator   = seq.New()
-		skillRepo     = repo.NewSkillRepo()
+		skillRepo     = entity.NewSkillList()
 		lineupRepo    = repo.NewLineupRepo(db)
 		unitRepo      = repo.NewUnitRepo(db, *skillRepo)
 		matchRepo     = repo.NewMatchRepo("sdmht:match", redisDB)

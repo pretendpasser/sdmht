@@ -484,50 +484,48 @@ func MakeOperateReq(c *Client, req interface{}) {
 	r := req.(*sdmht_entity.SyncOperate)
 	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeSyncOperator, r)
 	c.sendPayloadChan <- payload
-}
-
-func MakeKeepAliveReq(c *Client, _ interface{}) {
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
-	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
 	res, ok := recvPayload.MsgContent.(*sdmht_entity.SyncOperateRes)
 	if !ok {
 		return
 	}
-	for i, o := range res.Operates {
-		fmt.Println(i, "| ", o)
-	}
+	fmt.Println(res.Match)
+}
+
+func MakeKeepAliveReq(c *Client, _ interface{}) {
+	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
+	c.sendPayloadChan <- payload
 }
 
 func ShowScene(m *sdmht_entity.Match) {
 	fmt.Println("-------------", m.WhoseTurn, "-------------")
-	for who, player := range m.Players {
+	for who, scene := range m.Scenes {
 		fmt.Printf("--- %d ---", who)
-		for i, square := range player.Scene.Squares {
+		for i, square := range scene.Squares {
 			if i%4 == 0 {
 				fmt.Println()
 			}
 			if square <= 0 {
-				if player.Scene.UnitsLocation[i] != 0 && who == g_playerID {
-					fmt.Printf("■%d\t", player.Scene.UnitsLocation[i])
+				if scene.UnitsLocation[i] != 0 && who == g_playerID {
+					fmt.Printf("■%d\t", scene.UnitsLocation[i])
 				} else {
 					fmt.Printf("■\t")
 				}
 			} else {
-				if player.Scene.UnitsLocation[i] == 0 {
+				if scene.UnitsLocation[i] == 0 {
 					fmt.Printf("□\t")
 				} else {
-					fmt.Printf("□%d\t", player.Scene.UnitsLocation[i])
+					fmt.Printf("□%d\t", scene.UnitsLocation[i])
 				}
 			}
 		}
 		fmt.Println()
 		if who == g_playerID {
 			fmt.Println()
-			fmt.Println("library num:", len(player.Scene.CardLibraries),
-				"\tcountdown:", player.Scene.DrawCardCountDown)
-			fmt.Println(player.Scene.HandCards)
-			for _, unit := range player.Units {
+			fmt.Println("library num:", len(scene.CardLibraries),
+				"\tcountdown:", scene.DrawCardCountDown)
+			fmt.Println(scene.HandCards)
+			for _, unit := range scene.Units {
 				fmt.Println("\tname:", unit.Name, "\n",
 					"Health:", unit.Health, "\n",
 					"Attack:", unit.Attack, "\n",

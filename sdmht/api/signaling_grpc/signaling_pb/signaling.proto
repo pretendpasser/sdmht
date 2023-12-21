@@ -34,13 +34,17 @@ message Lineup {
 }
 
 message Scene {
-    repeated int32 squares = 1;
-    repeated int64 hand_cards = 2;
-    repeated int64 card_libraries = 3;
-    bool is_library_expty = 4;
-    int32 library_expty_hurt = 5;
-    int32 draw_card_countdown = 6;
-    repeated int64 units_location = 7;
+    uint64 player_id = 1;
+    repeated Unit units= 2;
+    repeated int32 squares = 3;
+    repeated int64 units_location = 4;
+    repeated int64 hand_cards = 5;
+    repeated int64 card_libraries = 6;
+    bool is_library_expty = 7;
+    bool has_subsidiary_deity_alive = 8;
+    int32 library_expty_hurt = 9;
+    int32 draw_card_countdown = 10;
+    int32 cost = 11;
 }
 
 message BaseAttribute {
@@ -49,7 +53,7 @@ message BaseAttribute {
     repeated Skill skills = 3;
     int32  rarity = 4;
     int32  affiliate = 5;
-    uint32  attack = 6;
+    uint32  base_attack = 6;
     uint32  max_defend = 7;
     uint32  max_health = 8;
     uint32  max_move = 9;
@@ -76,9 +80,9 @@ message Unit {
     // int32 location = 2;
     uint32 health = 3;
     uint32 defend = 4;
-    int32 move = 5;
-    bool attack_prevent = 6;
-    // bool counter_attack = 7;
+    uint32 attack = 5;
+    int32 move = 6;
+    bool attack_prevent = 7;
     // bool rebirth = 8;
     int32 hurt_instead = 9;
     uint32 no_move = 10;
@@ -90,19 +94,12 @@ message Unit {
     repeated TempAttribute cure = 16;
 }
 
-message Player {
-    uint64 id = 1;
-    Scene scene = 2;
-    repeated Unit units= 3;
-    int32 cost = 4;
-}
-
 message match {
     uint64 id = 1;
     uint64 winner = 2;
     int32 whose_turn = 3;
     uint64 cur_round = 4;
-    repeated Player players = 5;
+    repeated Scene scenes = 5;
     int64 sn = 6;
 }
 

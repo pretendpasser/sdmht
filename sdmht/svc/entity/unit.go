@@ -4,8 +4,6 @@ import (
 	"sdmht/lib/utils"
 )
 
-type SkillHandler func(match *Match, unitID int32, checking SkillChecking)
-
 const (
 	AffiliateNanhua       = 0 // 南华庄势力
 	AffiliateAsgard       = 1 // 阿斯加德势力
@@ -26,13 +24,13 @@ const (
 )
 
 type Unit struct {
-	UnitID int32 `json:"unit_id"`
 	BaseAttribute
 
 	// Weapon        int64  `json:"weapon"`         // 弹幕
 	// Trap          int64  `json:"trap"`           // 秘术
 	Health        uint32 `json:"health"`         // 生命值
 	Defend        uint32 `json:"defend"`         // 护盾
+	Attack        uint32 `json:"attack"`         // 攻击力
 	Move          int32  `json:"move"`           // 移动力
 	IsMoving      int32  `json:"is_moving"`      // 移动中 [0:未移动 1:移动中 -1:移动结束]
 	AttackPrevent bool   `json:"attack_prevent"` // 攻击防止(圣盾)
@@ -62,7 +60,7 @@ type BaseAttribute struct {
 	Skills       map[string]*Skill `json:"skills" db:"-"`
 	Rarity       int32             `json:"rarity" db:"rarity"`       // 稀有度
 	Affiliate    int32             `json:"affiliate" db:"affiliate"` // 所属势力
-	Attack       uint32            `json:"attack" db:"attack"`       // 攻击力
+	BaseAttack   uint32            `json:"base_attack" db:"attack"`  // 基础攻击力
 	MaxDefend    uint32            `json:"max_defend" db:"defend"`   // 最大护盾值
 	MaxHealth    uint32            `json:"max_health" db:"health"`   // 最大生命值
 	MaxMove      uint32            `json:"max_move" db:"move"`       // 最大移动力

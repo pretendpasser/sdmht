@@ -5,12 +5,14 @@ import (
 )
 
 const (
-	OriginSquare     = 0
+	OriginSquare     = 0  // 暗雾状态
 	SquareExposeTime = 3  // 迷雾暴露时间
-	MaxSquares       = 16 // 最大迷雾数
+	MaxSquares       = 16 // 最大迷雾格子数
 
-	MaxCostNum        = 10 // 费用最大值
-	DefaultAttachCost = 3  //
+	MaxCostNum = 10 // 费用最大值
+	FirstCost  = 7
+
+	DefaultAttachCost = 3  // 攻击消耗费用
 	MaxDrawCardTime   = 3  // 抽卡倒计时
 	HandCardStartNum  = 3  // 起始手牌数
 	HandCardMaxNum    = 10 // 手牌最大数
@@ -18,8 +20,13 @@ const (
 )
 
 type Scene struct {
-	// 0:迷雾;+x为回到迷雾的倒计时;-x为不可开启的迷雾持续时间
-	Squares       []int32 `json:"squares"`
+	// 玩家ID
+	PlayerID uint64 `json:"player_id"`
+	// 单位
+	Units map[int64]*Unit `json:"units"`
+	// 迷雾 0:迷雾;+x为回到迷雾的倒计时;-x为不可开启的迷雾持续时间
+	Squares []int32 `json:"squares"`
+	// 单位位置
 	UnitsLocation []int64 `json:"units_location"`
 	// 手牌 存牌的编号
 	HandCards []int64 `json:"hand_cards"`
@@ -27,6 +34,8 @@ type Scene struct {
 	CardLibraries []int64 `json:"card_libraries"`
 	// 牌库为空
 	IsLibraryExpty bool `json:"is_library_empty"`
+	// 无附属神存活
+	HasSubsidiaryDeityAlive bool `json:"has_subsidiary_deity_alive"`
 	// 牌库空之后的惩罚伤害
 	LibraryExptyHurt int32 `json:"library_empty_hurt"`
 	// 抽卡倒计时
@@ -35,34 +44,48 @@ type Scene struct {
 	Cost int32 `json:"cost"`
 }
 
-func NewScene(cardLibrarys []int64, unitsLocation []int64) *Scene {
+func NewScene(playerID uint64, units []*Unit,
+	cardLibrarys []int64, unitsLocation []int64) *Scene {
 	cardLibraries := utils.SliceRandom(cardLibrarys).([]int64)
-	return &Scene{
-		Squares:           make([]int32, MaxSquares),
-		UnitsLocation:     unitsLocation,
-		HandCards:         cardLibraries[:HandCardStartNum],
-		CardLibraries:     cardLibraries[HandCardStartNum:],
-		IsLibraryExpty:    false,
-		LibraryExptyHurt:  0,
-		DrawCardCountDown: MaxDrawCardTime,
-		Cost:              MaxCostNum,
+	scene := &Scene{
+		PlayerID:                playerID,
+		Squares:                 make([]int32, MaxSquares),
+		UnitsLocation:           unitsLocation,
+		HandCards:               cardLibraries[:HandCardStartNum],
+		CardLibraries:           cardLibraries[HandCardStartNum:],
+		IsLibraryExpty:          false,
+		HasSubsidiaryDeityAlive: true,
+		LibraryExptyHurt:        0,
+		DrawCardCountDown:       MaxDrawCardTime,
+		Cost:                    MaxCostNum,
 	}
+	for _, unit := range units {
+		scene.Units[unit.ID] = unit
+	}
+
+	return scene
 }
 
 func (s *Scene) NextRound() {
 	s.Cost = MaxCostNum
+
+	// check skill
+
 	if s.IsLibraryExpty {
 		s.LibraryExptyHurt += 2
 	}
-	s.WantToDrawCard()
 
 	for i, square := range s.Squares {
 		if square < 0 {
 			s.Squares[i]++
 		} else if square > 0 {
-			s.Squares[i]--
+			if s.HasSubsidiaryDeityAlive {
+				s.Squares[i]--
+			}
 		}
 	}
+
+	s.WantToDrawCard()
 }
 
 func (s *Scene) WantToDrawCard() {
@@ -110,14 +133,17 @@ func (s *Scene) OperatorAllSquare(time int32) {
 }
 
 // 随机 num 数量的开雾/盖雾
-func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
+func (s *Scene) RandomChangeSquare(num int, toExpose bool) {
 	if num > MaxSquares {
 		return
 	}
 
-	aliveMap := make(map[int]*struct{})
-	for _, alive := range alives {
-		aliveMap[alive] = &struct{}{}
+	aliveMap := make(map[int64]*struct{})
+	for _, unitID := range s.UnitsLocation {
+		if unitID == 0 {
+			continue
+		}
+		aliveMap[unitID] = &struct{}{}
 	}
 
 	exposed, unexposed := []int{}, []int{}               // 已暴露的，未暴露的
@@ -125,7 +151,7 @@ func (s *Scene) RandomChangeSquare(num int, toExpose bool, alives []int) {
 	for i, square := range s.Squares {
 		if square == 0 {
 			unexposed = append(unexposed, i)
-			if aliveMap[i] != nil {
+			if aliveMap[int64(i)] != nil {
 				unexposedAlive = append(unexposedAlive, i)
 			} else {
 				unexposedNoAlive = append(unexposedNoAlive, i)

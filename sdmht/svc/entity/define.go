@@ -7,37 +7,19 @@ var (
 )
 
 type Match struct {
-	ID        uint64    `json:"id"`
-	SN        int64     `json:"sn"`
-	Winner    uint64    `json:"winner"`
-	WhoseTurn int32     `json:"whose_turn"` // player index: [0 1]
-	CurRound  uint64    `json:"cur_round"`
-	Players   []*Player `json:"players"`
+	ID        uint64   `json:"id"`
+	SN        int64    `json:"sn"`
+	Winner    uint64   `json:"winner"`
+	WhoseTurn int32    `json:"whose_turn"` // player index: [0 1]
+	CurRound  uint64   `json:"cur_round"`
+	Scenes    []*Scene `json:"scenes"`
 }
 
-func (m *Match) GetOtherPlayer() int {
+func (m *Match) GetOtherPlayer() int32 {
 	if m.WhoseTurn == 0 {
 		return 1
 	}
 	return 0
-}
-
-type Player struct {
-	ID    uint64  `json:"id"`
-	Cost  int32   `json:"cost"`
-	Scene *Scene  `json:"scene"`
-	Units []*Unit `json:"units"`
-}
-
-func (p *Player) RandomChangeSquare(num int, toExpose bool) {
-	alives := []int{}
-	for i, unitID := range p.Scene.UnitsLocation {
-		if unitID == 0 {
-			continue
-		}
-		alives = append(alives, i)
-	}
-	p.Scene.RandomChangeSquare(num, toExpose, alives)
 }
 
 type Lineup struct {

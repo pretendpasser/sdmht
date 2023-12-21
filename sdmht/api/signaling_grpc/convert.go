@@ -40,13 +40,21 @@ func FromPBScene(in *pb.Scene) (out *entity.Scene) {
 		return (*entity.Scene)(nil)
 	}
 	out = &entity.Scene{
-		Squares:           in.GetSquares(),
-		UnitsLocation:     in.GetUnitsLocation(),
-		HandCards:         in.GetHandCards(),
-		CardLibraries:     in.GetCardLibraries(),
-		IsLibraryExpty:    in.GetIsLibraryExpty(),
-		LibraryExptyHurt:  in.GetLibraryExptyHurt(),
-		DrawCardCountDown: in.GetDrawCardCountdown(),
+		PlayerID:                in.GetPlayerId(),
+		Units:                   make(map[int64]*entity.Unit),
+		Squares:                 in.GetSquares(),
+		UnitsLocation:           in.GetUnitsLocation(),
+		HandCards:               in.GetHandCards(),
+		CardLibraries:           in.GetCardLibraries(),
+		IsLibraryExpty:          in.GetIsLibraryExpty(),
+		HasSubsidiaryDeityAlive: in.GetHasSubsidiaryDeityAlive(),
+		LibraryExptyHurt:        in.GetLibraryExptyHurt(),
+		DrawCardCountDown:       in.GetDrawCardCountdown(),
+		Cost:                    in.GetCost(),
+	}
+	for _, unitPB := range in.GetUnits() {
+		unit := FromPBUnit(unitPB)
+		out.Units[unit.ID] = unit
 	}
 	return out
 }
@@ -54,41 +62,17 @@ func ToPBScene(in *entity.Scene) (out *pb.Scene) {
 	if in == nil {
 		return (*pb.Scene)(nil)
 	}
-	return &pb.Scene{
-		Squares:           in.Squares[:],
-		UnitsLocation:     in.UnitsLocation[:],
-		HandCards:         in.HandCards[:],
-		CardLibraries:     in.CardLibraries[:],
-		IsLibraryExpty:    in.IsLibraryExpty,
-		LibraryExptyHurt:  in.LibraryExptyHurt,
-		DrawCardCountdown: in.DrawCardCountDown,
-	}
-}
-
-func FromPBPlayer(in *pb.Player) (out *entity.Player) {
-	if in == nil {
-		return (*entity.Player)(nil)
-	}
-	out = &entity.Player{
-		ID:    in.GetId(),
-		Cost:  in.GetCost(),
-		Scene: FromPBScene(in.GetScene()),
-		Units: []*entity.Unit{},
-	}
-	for _, unit := range in.GetUnits() {
-		out.Units = append(out.Units, FromPBUnit(unit))
-	}
-	return out
-}
-func ToPBPlayer(in *entity.Player) (out *pb.Player) {
-	if in == nil {
-		return (*pb.Player)(nil)
-	}
-	out = &pb.Player{
-		Id:    in.ID,
-		Cost:  in.Cost,
-		Scene: ToPBScene(in.Scene),
-		Units: []*pb.Unit{},
+	out = &pb.Scene{
+		PlayerId:                in.PlayerID,
+		Squares:                 in.Squares[:],
+		UnitsLocation:           in.UnitsLocation[:],
+		HandCards:               in.HandCards[:],
+		CardLibraries:           in.CardLibraries[:],
+		IsLibraryExpty:          in.IsLibraryExpty,
+		HasSubsidiaryDeityAlive: in.HasSubsidiaryDeityAlive,
+		LibraryExptyHurt:        in.LibraryExptyHurt,
+		DrawCardCountdown:       in.DrawCardCountDown,
+		Cost:                    in.Cost,
 	}
 	for _, unit := range in.Units {
 		out.Units = append(out.Units, ToPBUnit(unit))
@@ -106,10 +90,10 @@ func FromPBMatch(in *pb.Match) (out *entity.Match) {
 		Winner:    in.GetWinner(),
 		WhoseTurn: in.GetWhoseTurn(),
 		CurRound:  in.GetCurRound(),
-		Players:   []*entity.Player{},
+		Scenes:    []*entity.Scene{},
 	}
-	for _, player := range in.GetPlayers() {
-		out.Players = append(out.Players, FromPBPlayer(player))
+	for _, scene := range in.GetScenes() {
+		out.Scenes = append(out.Scenes, FromPBScene(scene))
 	}
 	return out
 }
@@ -123,10 +107,10 @@ func ToPBMatch(in *entity.Match) (out *pb.Match) {
 		Winner:    in.Winner,
 		WhoseTurn: in.WhoseTurn,
 		CurRound:  in.CurRound,
-		Players:   []*pb.Player{},
+		Scenes:    []*pb.Scene{},
 	}
-	for _, player := range in.Players {
-		out.Players = append(out.Players, ToPBPlayer(player))
+	for _, scene := range in.Scenes {
+		out.Scenes = append(out.Scenes, ToPBScene(scene))
 	}
 	return out
 }
@@ -226,7 +210,7 @@ func FromPBBaseAttribute(in *pb.BaseAttribute) (out *entity.BaseAttribute) {
 		Name:         in.GetName(),
 		Rarity:       in.GetRarity(),
 		Affiliate:    in.GetAffiliate(),
-		Attack:       in.GetAttack(),
+		BaseAttack:   in.GetBaseAttack(),
 		MaxDefend:    in.GetMaxDefend(),
 		MaxHealth:    in.GetMaxHealth(),
 		MaxMove:      in.GetMaxMove(),
@@ -245,7 +229,7 @@ func ToPBBaseAttribute(in *entity.BaseAttribute) (out *pb.BaseAttribute) {
 		Name:         in.Name,
 		Rarity:       in.Rarity,
 		Affiliate:    in.Affiliate,
-		Attack:       in.Attack,
+		BaseAttack:   in.BaseAttack,
 		MaxDefend:    in.MaxDefend,
 		MaxHealth:    in.MaxHealth,
 		MaxMove:      in.MaxMove,

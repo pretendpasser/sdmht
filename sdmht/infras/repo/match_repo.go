@@ -59,7 +59,7 @@ func (r *matchRepo) New(match *entity.Match) error {
 	if r.match[match.ID] != nil {
 		return lib.NewError(lib.ErrInvalidArgument, "match exist")
 	}
-	if len(match.Players) == 0 {
+	if len(match.Scenes) == 0 {
 		return lib.NewError(lib.ErrInvalidArgument, "no player")
 	}
 	r.match[match.ID] = match
@@ -75,9 +75,9 @@ func (r *matchRepo) New(match *entity.Match) error {
 func (r *matchRepo) Join(match *entity.Match) error {
 	r.mux.Lock()
 	defer r.mux.Unlock()
-	if len(r.match[match.ID].Players) >= 2 {
+	if len(r.match[match.ID].Scenes) >= 2 {
 		return lib.NewError(lib.ErrInternal, "match is already full")
-	} else if len(r.match[match.ID].Players) == 0 {
+	} else if len(r.match[match.ID].Scenes) == 0 {
 		return lib.NewError(lib.ErrInternal, "match is invalid")
 	}
 	r.match[match.ID] = match
@@ -107,8 +107,8 @@ func (r *matchRepo) Delete(id uint64) {
 		delete(r.matchTimeout, id)
 	}
 	if r.match[id] != nil {
-		for _, player := range r.match[id].Players {
-			delete(r.account, player.ID)
+		for _, scene := range r.match[id].Scenes {
+			delete(r.account, scene.PlayerID)
 		}
 		delete(r.match, id)
 	}
@@ -124,8 +124,8 @@ func (r *matchRepo) genAccountKey(accountID uint64) string {
 }
 
 func (r *matchRepo) RSet(ctx context.Context, match *entity.Match) error {
-	for _, player := range match.Players {
-		key := r.genAccountKey(player.ID)
+	for _, scene := range match.Scenes {
+		key := r.genAccountKey(scene.PlayerID)
 		_, err := r.rdb.Set(ctx, key, match.ID, maxMatchTimeout).Result()
 		if err != nil {
 			log.S().Errorw("redis set account-match not found", "err", err)

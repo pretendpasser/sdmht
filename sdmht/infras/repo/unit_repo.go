@@ -17,13 +17,13 @@ var _ itfs.UnitRepo = (*unitRepo)(nil)
 
 type unitRepo struct {
 	db        *sqlx.DB
-	skillRepo SkillRepo
+	skillList entity.SkillList
 }
 
-func NewUnitRepo(db *sqlx.DB, skillRepo SkillRepo) *unitRepo {
+func NewUnitRepo(db *sqlx.DB, skillList entity.SkillList) *unitRepo {
 	return &unitRepo{
 		db:        db,
-		skillRepo: skillRepo,
+		skillList: skillList,
 	}
 }
 
@@ -50,8 +50,8 @@ func (r *unitRepo) Get(ctx context.Context, ids []int64) ([]*entity.Unit, error)
 		skillNames := strings.Split(unit.SkillName, ";")
 		for _, skillName := range skillNames {
 			units[i].Skills[skillName] = &entity.Skill{
-				Desc:    r.skillRepo.Get(skillName),
-				Handler: r.skillRepo.Checking(skillName),
+				Desc:    r.skillList.Get(skillName),
+				Handler: r.skillList.Checking(skillName),
 			}
 		}
 	}
@@ -105,8 +105,8 @@ func (r *unitRepo) Find(ctx context.Context, query *entity.UnitQuery) (total int
 		skillNames := strings.Split(unit.SkillName, ";")
 		for _, skillName := range skillNames {
 			units[i].Skills[skillName] = &entity.Skill{
-				Desc:    r.skillRepo.Get(skillName),
-				Handler: r.skillRepo.Checking(skillName),
+				Desc:    r.skillList.Get(skillName),
+				Handler: r.skillList.Checking(skillName),
 			}
 		}
 	}
