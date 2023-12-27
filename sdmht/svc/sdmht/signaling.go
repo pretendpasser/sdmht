@@ -340,12 +340,14 @@ func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) 
 }
 
 func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate) (*entity.SyncOperateRes, error) {
+	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
 	match, err := s.matchRepo.Get(req.MatchID)
 	if err != nil {
-		log.S().Errorw("SyncOperate: get match fail", "matchID", req.MatchID, "err", err)
+		slog.Errorw("SyncOperate: get match fail", "matchID", req.MatchID, "err", err)
 		return nil, err
 	}
 	if match.WhoseTurn != req.Operator {
+		slog.Errorw("SyncOperate: not your turn", "operator", req.Operator, "req", req)
 		return nil, lib.NewError(lib.ErrInvalidArgument, "不是你的回合")
 	}
 	otherPlayer := match.GetOtherPlayer()
@@ -353,8 +355,15 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 
 	switch req.Event {
 	case entity.OpEventAttack:
+		if req.To > 15 || req.To < 0 {
+			slog.Errorw("SyncOperate: invalid To", "event", req.Event,
+				"to", req.To)
+			return nil, lib.NewError(lib.ErrInvalidArgument, "非法目标")
+		}
 		// 费用检查
 		if match.Scenes[req.Operator].Cost < entity.DefaultAttachCost {
+			slog.Errorw("SyncOperate: no enough cost", "event", req.Event,
+				"cost", match.Scenes[req.Operator].Cost)
 			return nil, lib.NewError(lib.ErrInvalidArgument, "费用不足")
 		} else {
 			match.Scenes[req.Operator].Cost -= entity.DefaultAttachCost
@@ -363,13 +372,22 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 		if match.Scenes[otherPlayer].Squares[req.To] == entity.OriginSquare {
 			match.Scenes[otherPlayer].Squares[req.To] += entity.SquareExposeTime
 		}
-
 		// 攻击发起者
 		fromUnit := match.Scenes[req.Operator].Units[req.From]
+		if fromUnit == nil {
+			slog.Errorw("SyncOperate: fromUnit not exist", "event", req.Event,
+				"from", req.From)
+			return nil, lib.NewError(lib.ErrInvalidArgument, "单位不存在")
+		}
 		// 检查迷雾位置的单位
 		toUnitID := match.Scenes[otherPlayer].UnitsLocation[req.To]
 		if toUnitID != 0 {
 			toUnit := match.Scenes[otherPlayer].Units[toUnitID]
+			if toUnit == nil {
+				slog.Error("SyncOperate: toUnit not exist", "event", req.Event,
+					"to", req.To)
+				return nil, lib.NewError(lib.ErrInvalidArgument, "目标单位不存在")
+			}
 			if toUnit.AttackPrevent {
 				// 圣盾防止
 				match.Scenes[otherPlayer].Units[toUnitID].AttackPrevent = false
@@ -391,28 +409,88 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 						match.Scenes[otherPlayer].Units[toUnitID].Health -= attack
 					} else {
 						delete(match.Scenes[otherPlayer].Units, toUnitID)
-						hasSubsidiaryDeityAlive := false
-						for _, unit := range match.Scenes[otherPlayer].Units {
-							if unit.Rarity >= 1 && unit.Rarity <= 4 {
-								hasSubsidiaryDeityAlive = true
-								break
-							}
+						match.Scenes[otherPlayer].UnitsLocation[req.To] = 0
+						if toUnit.Rarity >= 1 && toUnit.Rarity <= 4 {
+							match.Scenes[otherPlayer].RetainerAliveNum--
 						}
-						match.Scenes[otherPlayer].HasSubsidiaryDeityAlive = hasSubsidiaryDeityAlive
 					}
 				}
 			}
 		}
-
 	case entity.OpEventMove:
+		// 检查目的地是否合法
+		if req.To > 15 || req.To < 0 || match.Scenes[req.Operator].UnitsLocation[req.To] != 0 {
+			slog.Errorw("SyncOperate: invalid From or To", "event", req.Event,
+				"to", req.To, "locationTo", match.Scenes[req.Operator].UnitsLocation[req.To])
+			return nil, lib.NewError(lib.ErrInvalidArgument, "非法目标")
+		}
+		// 移动发起者
+		fromUnit := match.Scenes[req.Operator].Units[req.From]
+		if fromUnit == nil {
+			slog.Errorw("SyncOperate: fromUnit not exist", "event", req.Event,
+				"from", req.From)
+			return nil, lib.NewError(lib.ErrInvalidArgument, "单位不存在")
+		}
+		// 检查是否可以移动
+		if fromUnit.BaseAttribute.BaseNoMove || fromUnit.NoMove > 0 ||
+			fromUnit.Move == 0 || fromUnit.IsMoving == -1 ||
+			match.Scenes[req.Operator].Cost == 0 {
+			slog.Errorw("SyncOperate: not allowed to move", "event", req.Event,
+				"BaseNoMove", fromUnit.BaseAttribute.BaseNoMove, "NoMove", fromUnit.NoMove,
+				"Move", fromUnit.Move, "IsMoving", fromUnit.IsMoving,
+				"Cost", match.Scenes[req.Operator].Cost)
+			return nil, lib.NewError(lib.ErrInvalidArgument, "禁止移动")
+		}
+		// 移动发起者的位置
+		var fromUnitLocation int64 = 0
+		for position, unitID := range match.Scenes[req.Operator].UnitsLocation {
+			if unitID == fromUnit.ID {
+				if int64(position) == req.To {
+					slog.Errorw("SyncOperate: From is equal to To",
+						"fromLocation", fromUnitLocation, "to", req.To)
+					return nil, lib.NewError(lib.ErrInvalidArgument, "移动始终点相同")
+				}
+				fromUnitLocation = int64(position)
+				break
+			}
+			if position == len(match.Scenes[req.Operator].UnitsLocation) {
+				slog.Errorw("SyncOperate: lose sync between unit and it's location", "event", req.Event,
+					"from", req.From, "to", req.To, "unitLocation", match.Scenes[req.Operator].UnitsLocation)
+				return nil, lib.NewError(lib.ErrInvalidArgument, "单位与位置不同步")
+			}
+		}
+		err := entity.CheckMoveing(fromUnitLocation, req.To)
+		if err != nil {
+			slog.Errorw("SyncOperate:check moving fail", "event", req.Event,
+				"fromLoc", fromUnitLocation, "toLoc", req.To)
+			return nil, err
+		}
+		if req.From != match.Scenes[req.Operator].LastMoveUnitID {
+			lastMoveUnitID := match.Scenes[req.Operator].LastMoveUnitID
+			if match.Scenes[req.Operator].Units[lastMoveUnitID] != nil {
+				match.Scenes[req.Operator].Units[lastMoveUnitID].IsMoving = -1
+			}
+		}
+		match.Scenes[req.Operator].UnitsLocation[fromUnitLocation] = 0
+		match.Scenes[req.Operator].UnitsLocation[req.To] = fromUnit.ID
+		match.Scenes[req.Operator].Units[req.From].Move -= 1
+		match.Scenes[req.Operator].Units[req.From].IsMoving = 1
+		match.Scenes[req.Operator].Cost -= 1
+		match.Scenes[req.Operator].LastMoveUnitID = fromUnit.ID
 	case entity.OpEventCard:
+		length := len(match.Scenes[req.Operator].HandCards)
 		for i, card := range match.Scenes[req.Operator].HandCards {
 			if card == req.From {
-				max := len(match.Scenes[req.Operator].HandCards) - 1
+				max := length - 1
 				match.Scenes[req.Operator].HandCards[i], match.Scenes[req.Operator].HandCards[max] =
 					match.Scenes[req.Operator].HandCards[max], match.Scenes[req.Operator].HandCards[i]
 				match.Scenes[req.Operator].HandCards = match.Scenes[req.Operator].HandCards[:max]
 				break
+			}
+			if i == length {
+				slog.Errorw("SyncOperate: no exist this card", "event", req.Event,
+					"from", req.From, "to", req.To)
+				return nil, lib.NewError(lib.ErrInvalidArgument, "卡牌不存在")
 			}
 		}
 	case entity.OpEventSkill:
@@ -422,19 +500,35 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 		// 对手回合开始
 		match.Scenes[otherPlayer].NextRound()
 	default:
-		log.S().Errorw("SyncOperator: no this event", "req", req)
+		slog.Errorw("SyncOperator: no this event", "req", req)
 		return nil, lib.NewError(lib.ErrInvalidArgument, "非法操作")
+	}
+
+	lastMoveUnitID := match.Scenes[req.Operator].LastMoveUnitID
+	if lastMoveUnitID != 0 && req.Event != entity.OpEventMove {
+		if match.Scenes[req.Operator].Units[lastMoveUnitID] != nil {
+			match.Scenes[req.Operator].Units[lastMoveUnitID].IsMoving = -1
+		}
+		match.Scenes[req.Operator].LastMoveUnitID = 0
+	}
+
+	// check match end
+	for i, scene := range match.Scenes {
+		masterID := scene.MasterID
+		if scene.Units[masterID].Health == 0 {
+			match.Winner = match.Scenes[1-i].PlayerID
+		}
 	}
 
 	data, err := json.Marshal(&match)
 	if err != nil {
-		log.S().Errorw("SyncOperator: marshal match fail", "err", err)
+		slog.Errorw("SyncOperator: marshal match fail", "err", err)
 		return nil, err
 	}
-	log.S().Infow("SyncOperator:MarshalNotice", "data", json.RawMessage(data))
+	slog.Infow("SyncOperator:MarshalNotice", "data", json.RawMessage(data))
 	cli, e := s.connManger.GetConnCli(context.TODO(), otherPlayerID)
 	if e != nil {
-		log.S().Errorw("SyncOperator:Dispatch", "accountid", otherPlayerID, "noClient", cli == nil, "err", e)
+		slog.Errorw("SyncOperator:Dispatch", "accountid", otherPlayerID, "noClient", cli == nil, "err", e)
 	}
 	go func(accountID uint64, data []byte) {
 		_, err := cli.DispatchEventToClient(context.TODO(), accountID, entity.ClientEvent{
@@ -444,7 +538,7 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 			Content:   data,
 		})
 		if err != nil {
-			log.S().Errorw("SyncOperator", "err", err)
+			slog.Errorw("SyncOperator", "err", err)
 		}
 	}(otherPlayerID, data)
 

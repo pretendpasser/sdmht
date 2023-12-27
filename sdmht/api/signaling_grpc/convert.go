@@ -40,17 +40,19 @@ func FromPBScene(in *pb.Scene) (out *entity.Scene) {
 		return (*entity.Scene)(nil)
 	}
 	out = &entity.Scene{
-		PlayerID:                in.GetPlayerId(),
-		Units:                   make(map[int64]*entity.Unit),
-		Squares:                 in.GetSquares(),
-		UnitsLocation:           in.GetUnitsLocation(),
-		HandCards:               in.GetHandCards(),
-		CardLibraries:           in.GetCardLibraries(),
-		IsLibraryExpty:          in.GetIsLibraryExpty(),
-		HasSubsidiaryDeityAlive: in.GetHasSubsidiaryDeityAlive(),
-		LibraryExptyHurt:        in.GetLibraryExptyHurt(),
-		DrawCardCountDown:       in.GetDrawCardCountdown(),
-		Cost:                    in.GetCost(),
+		PlayerID:          in.GetPlayerId(),
+		MasterID:          in.GetMasterId(),
+		Units:             make(map[int64]*entity.Unit),
+		Squares:           in.GetSquares(),
+		UnitsLocation:     in.GetUnitsLocation(),
+		HandCards:         in.GetHandCards(),
+		CardLibraries:     in.GetCardLibraries(),
+		IsLibraryExpty:    in.GetIsLibraryExpty(),
+		RetainerAliveNum:  in.GetRetainerAliveNum(),
+		LibraryExptyHurt:  in.GetLibraryExptyHurt(),
+		DrawCardCountDown: in.GetDrawCardCountdown(),
+		Cost:              in.GetCost(),
+		LastMoveUnitID:    in.GetLastMoveUnitId(),
 	}
 	for _, unitPB := range in.GetUnits() {
 		unit := FromPBUnit(unitPB)
@@ -63,16 +65,18 @@ func ToPBScene(in *entity.Scene) (out *pb.Scene) {
 		return (*pb.Scene)(nil)
 	}
 	out = &pb.Scene{
-		PlayerId:                in.PlayerID,
-		Squares:                 in.Squares[:],
-		UnitsLocation:           in.UnitsLocation[:],
-		HandCards:               in.HandCards[:],
-		CardLibraries:           in.CardLibraries[:],
-		IsLibraryExpty:          in.IsLibraryExpty,
-		HasSubsidiaryDeityAlive: in.HasSubsidiaryDeityAlive,
-		LibraryExptyHurt:        in.LibraryExptyHurt,
-		DrawCardCountdown:       in.DrawCardCountDown,
-		Cost:                    in.Cost,
+		PlayerId:          in.PlayerID,
+		MasterId:          in.MasterID,
+		Squares:           in.Squares[:],
+		UnitsLocation:     in.UnitsLocation[:],
+		HandCards:         in.HandCards[:],
+		CardLibraries:     in.CardLibraries[:],
+		IsLibraryExpty:    in.IsLibraryExpty,
+		RetainerAliveNum:  in.RetainerAliveNum,
+		LibraryExptyHurt:  in.LibraryExptyHurt,
+		DrawCardCountdown: in.DrawCardCountDown,
+		Cost:              in.Cost,
+		LastMoveUnitId:    in.LastMoveUnitID,
 	}
 	for _, unit := range in.Units {
 		out.Units = append(out.Units, ToPBUnit(unit))

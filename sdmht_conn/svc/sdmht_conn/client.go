@@ -187,7 +187,7 @@ func (c *Client) handleReqMsg(ctx context.Context, payload entity.Payload) (ret 
 	switch payload.MsgType {
 	case sdmht_entity.MsgTypeLogin:
 		req := payload.MsgContent.(*sdmht_entity.LoginReq)
-		res, err2 := c.connMng.Login(context.TODO(), req)
+		res, err2 := c.connMng.Login(ctx, req)
 		if err2 != nil {
 			err = err2
 			break

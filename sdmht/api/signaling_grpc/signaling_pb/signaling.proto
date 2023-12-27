@@ -41,10 +41,12 @@ message Scene {
     repeated int64 hand_cards = 5;
     repeated int64 card_libraries = 6;
     bool is_library_expty = 7;
-    bool has_subsidiary_deity_alive = 8;
+    int32 retainer_alive_num = 8;
     int32 library_expty_hurt = 9;
     int32 draw_card_countdown = 10;
     int32 cost = 11;
+    int64 last_move_unit_id = 12;
+    int64 master_id = 13;
 }
 
 message BaseAttribute {
@@ -53,10 +55,10 @@ message BaseAttribute {
     repeated Skill skills = 3;
     int32  rarity = 4;
     int32  affiliate = 5;
-    uint32  base_attack = 6;
-    uint32  max_defend = 7;
-    uint32  max_health = 8;
-    uint32  max_move = 9;
+    int32  base_attack = 6;
+    int32  max_defend = 7;
+    int32  max_health = 8;
+    int32  max_move = 9;
     bool  base_no_move = 10;
     bool  base_no_attack = 11;
     bool  base_no_cure = 12;
@@ -72,22 +74,22 @@ message Skill {
 
 message TempAttribute {
     int32   value = 1;
-    uint32  period = 2;
+    int32  period = 2;
 }
 
 message Unit {
     BaseAttribute baseAttribute = 1;
     // int32 location = 2;
-    uint32 health = 3;
-    uint32 defend = 4;
-    uint32 attack = 5;
+    int32 health = 3;
+    int32 defend = 4;
+    int32 attack = 5;
     int32 move = 6;
     bool attack_prevent = 7;
     // bool rebirth = 8;
     int32 hurt_instead = 9;
-    uint32 no_move = 10;
-    uint32 no_attack = 11;
-    uint32 no_cure = 12;
+    int32 no_move = 10;
+    int32 no_attack = 11;
+    int32 no_cure = 12;
     repeated TempAttribute change_attack = 13;
     repeated TempAttribute change_move = 14;
     repeated TempAttribute hurt = 15;

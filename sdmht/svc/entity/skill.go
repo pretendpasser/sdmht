@@ -135,7 +135,7 @@ func SkillBeiNi(m *Match, unitID int64, checking SkillChecking) {
 	log.S().Infow("悖逆", "next round", m.CurRound)
 	otherUnit.AttackPrevent = true
 	// atomic.StoreInt32(&otherUnit.PermanentlyCover, 1)
-	atomic.AddUint32(&otherUnit.Attack, 1)
+	atomic.AddInt32(&otherUnit.Attack, 1)
 }
 
 func SkillDescYaoSaiGuangHan() string {

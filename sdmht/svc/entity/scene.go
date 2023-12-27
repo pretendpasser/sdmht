@@ -22,6 +22,8 @@ const (
 type Scene struct {
 	// 玩家ID
 	PlayerID uint64 `json:"player_id"`
+	// 主神单位ID
+	MasterID int64 `json:"master_id"`
 	// 单位
 	Units map[int64]*Unit `json:"units"`
 	// 迷雾 0:迷雾;+x为回到迷雾的倒计时;-x为不可开启的迷雾持续时间
@@ -34,33 +36,38 @@ type Scene struct {
 	CardLibraries []int64 `json:"card_libraries"`
 	// 牌库为空
 	IsLibraryExpty bool `json:"is_library_empty"`
-	// 无附属神存活
-	HasSubsidiaryDeityAlive bool `json:"has_subsidiary_deity_alive"`
+	// 附属神存活数
+	RetainerAliveNum int32 `json:"retainer_alive_num"`
 	// 牌库空之后的惩罚伤害
 	LibraryExptyHurt int32 `json:"library_empty_hurt"`
 	// 抽卡倒计时
 	DrawCardCountDown int32 `json:"draw_card_count_down"`
 	// 费用
 	Cost int32 `json:"cost"`
+	// 上一个移动的单位ID
+	LastMoveUnitID int64 `json:"last_move_unit_id"`
 }
 
 func NewScene(playerID uint64, units []*Unit,
 	cardLibrarys []int64, unitsLocation []int64) *Scene {
 	cardLibraries := utils.SliceRandom(cardLibrarys).([]int64)
 	scene := &Scene{
-		PlayerID:                playerID,
-		Squares:                 make([]int32, MaxSquares),
-		UnitsLocation:           unitsLocation,
-		HandCards:               cardLibraries[:HandCardStartNum],
-		CardLibraries:           cardLibraries[HandCardStartNum:],
-		IsLibraryExpty:          false,
-		HasSubsidiaryDeityAlive: true,
-		LibraryExptyHurt:        0,
-		DrawCardCountDown:       MaxDrawCardTime,
-		Cost:                    MaxCostNum,
+		PlayerID:          playerID,
+		Squares:           make([]int32, MaxSquares),
+		UnitsLocation:     unitsLocation,
+		HandCards:         cardLibraries[:HandCardStartNum],
+		CardLibraries:     cardLibraries[HandCardStartNum:],
+		IsLibraryExpty:    false,
+		RetainerAliveNum:  2,
+		LibraryExptyHurt:  0,
+		DrawCardCountDown: MaxDrawCardTime,
+		Cost:              MaxCostNum,
 	}
 	for _, unit := range units {
 		scene.Units[unit.ID] = unit
+		if unit.Rarity == RarityMainDeity {
+			scene.MasterID = unit.ID
+		}
 	}
 
 	return scene
@@ -68,8 +75,25 @@ func NewScene(playerID uint64, units []*Unit,
 
 func (s *Scene) NextRound() {
 	s.Cost = MaxCostNum
-
-	// check skill
+	s.LastMoveUnitID = 0
+	for _, unit := range s.Units {
+		// unit.Skills
+		unit.NextRound()
+		if unit.Health == 0 {
+			if unit.Rarity == 0 {
+				return
+			} else if unit.Rarity >= 1 && unit.Rarity <= 4 {
+				s.RetainerAliveNum--
+			}
+			for i := range s.UnitsLocation {
+				if s.UnitsLocation[i] == unit.ID {
+					s.UnitsLocation[i] = 0
+					break
+				}
+			}
+			delete(s.Units, unit.ID)
+		}
+	}
 
 	if s.IsLibraryExpty {
 		s.LibraryExptyHurt += 2
@@ -79,7 +103,7 @@ func (s *Scene) NextRound() {
 		if square < 0 {
 			s.Squares[i]++
 		} else if square > 0 {
-			if s.HasSubsidiaryDeityAlive {
+			if s.RetainerAliveNum > 0 {
 				s.Squares[i]--
 			}
 		}
