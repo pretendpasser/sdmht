@@ -114,7 +114,7 @@ func (c *Client) HandleReadMsg() {
 			break
 		}
 
-		fmt.Println("client[", c.NO, "] recv payload", string(msg))
+		// fmt.Println("client[", c.NO, "] recv payload", string(msg))
 
 		payload, err := entity.RspMsgToPayload(msg)
 		if err != nil {
@@ -124,6 +124,7 @@ func (c *Client) HandleReadMsg() {
 			c.sendPayloadChan <- payload
 			continue
 		}
+		fmt.Println("Mention Info:", payload.Result)
 		if payload.PayloadType == entity.PayloadTypeRsp {
 			if _, ok := payload.MsgContent.(*sdmht_entity.CommonRes); !ok {
 				c.recvPayloadChan <- payload
@@ -218,8 +219,8 @@ func testClient() {
 			time.Sleep(1 * time.Millisecond)
 			fmt.Printf("\nInput cmd > ")
 			fmt.Scanln(&cmd)
-			if g_match.ID != 0 && cmd != "operate" {
-				fmt.Println("You are in a match. Use 'operate [behave] [fromPlayer] [from] [toPlayer] [to]'")
+			if g_match.ID != 0 && cmd != "operate" && cmd != "op" {
+				fmt.Println("You are in a match. Use 'operate [event] [from] [to]'")
 				continue
 			}
 			switch cmd {
@@ -301,7 +302,8 @@ func testClient() {
 					ID:        lineupID,
 					AccountID: g_account.ID,
 				})
-			case "newMatch":
+			case "newMatch", "nm":
+				cmd = "newMatch"
 				lineupID := uint64(0)
 				fmt.Printf("Input newMatch param [lineupID]> ")
 				fmt.Scanln(&lineupID)
@@ -327,11 +329,13 @@ func testClient() {
 					LineupID:  lineupID,
 					Positions: position,
 				})
-			case "getMatch":
+			case "getMatch", "gm":
+				cmd = "getMatch"
 				cmdList[cmd](c, &sdmht_entity.GetMatchReq{
 					AccountID: g_account.ID,
 				})
-			case "joinMatch":
+			case "joinMatch", "jm":
+				cmd = "joinMatch"
 				lineupID, matchID := uint64(0), uint64(0)
 				fmt.Printf("Input newMatch param [lineupID, matchID]> ")
 				fmt.Scanln(&lineupID, &matchID)
@@ -357,10 +361,22 @@ func testClient() {
 					Positions: position,
 					LineupID:  lineupID,
 				})
-			case "operate":
+			case "operate", "op":
+				cmd = "operate"
 				if g_playerID != int(g_match.WhoseTurn) {
 					fmt.Println("not your turn")
+					break
 				}
+				event, from, to := "", int64(0), int64(0)
+				fmt.Printf("Event mention: [attack|move|end]\nInput operate param [event, from, to]> ")
+				fmt.Scanln(&event, &from, &to)
+				cmdList[cmd](c, &sdmht_entity.SyncOperate{
+					MatchID:  g_match.ID,
+					Operator: int32(g_playerID),
+					Event:    event,
+					From:     from,
+					To:       to,
+				})
 			case "help":
 				fmt.Println("following cmd can be used\n" +
 					"|login|\n" +
@@ -489,7 +505,9 @@ func MakeOperateReq(c *Client, req interface{}) {
 	if !ok {
 		return
 	}
-	fmt.Println(res.Match)
+	g_match = &res.Match
+	fmt.Println("========== After Operate ============")
+	ShowScene(g_match)
 }
 
 func MakeKeepAliveReq(c *Client, _ interface{}) {
@@ -523,13 +541,22 @@ func ShowScene(m *sdmht_entity.Match) {
 		if who == g_playerID {
 			fmt.Println()
 			fmt.Println("library num:", len(scene.CardLibraries),
-				"\tcountdown:", scene.DrawCardCountDown)
+				"\tcountdown:", scene.DrawCardCountDown,
+				"\tcost:", scene.Cost)
 			fmt.Println(scene.HandCards)
 			for _, unit := range scene.Units {
-				fmt.Println("\tname:", unit.Name, "\n",
-					"Health:", unit.Health, "\n",
-					"Attack:", unit.Attack, "\n",
-					"move:", unit.Move)
+				fmt.Println("-->\tname:", unit.Name, "\tid:", unit.ID, "\n",
+					"Health:", unit.Health, "\tDefend:", unit.Defend, "\n",
+					"Attack:", unit.Attack, "\tmove:", unit.Move)
+			}
+		} else {
+			for i, square := range scene.Squares {
+				if square > 0 && scene.UnitsLocation[i] != 0 {
+					unit := scene.Units[scene.UnitsLocation[i]]
+					fmt.Println("-->\tname:", unit.Name, "\tid:", unit.ID, "\n",
+						"Health:", unit.Health, "\tDefend:", unit.Defend, "\n",
+						"Attack:", unit.Attack, "\tmove:", unit.Move)
+				}
 			}
 		}
 	}

@@ -147,6 +147,31 @@ func enJoinMatchReply(_ context.Context, response interface{}) (interface{}, err
 	return res, nil
 }
 
+func deSyncOperateReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+	req := grpcReq.(*pb.SyncOperateReq)
+	return &entity.SyncOperate{
+		MatchID:  req.GetMatchId(),
+		Operator: req.GetOperator(),
+		Event:    req.GetEvent(),
+		From:     req.GetFrom(),
+		To:       req.GetTo(),
+	}, nil
+}
+func enSyncOperateReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(kitx.Response)
+	res := &pb.SyncOperateReply{}
+	if r.Error != nil {
+		res.Err = errpb.ToPbError(r.Error)
+		return res, nil
+	}
+	rr := r.Value.(*entity.SyncOperateRes)
+	if rr == nil {
+		return res, nil
+	}
+	res.Match = grpc.ToPBMatch(&rr.Match)
+	return res, nil
+}
+
 func enCommonReply(_ context.Context, response interface{}) (interface{}, error) {
 	r := response.(kitx.Response)
 	res := &pb.CommonReply{}

@@ -290,7 +290,6 @@ func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) 
 	}
 
 	scene := entity.NewScene(req.AccountID, units, lineup.CardLibrarys, req.Positions)
-
 	match, err := s.matchRepo.Get(req.MatchID)
 	if err != nil {
 		log.S().Errorw("JoinMatch: get match fail", "err", err)
@@ -305,13 +304,6 @@ func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) 
 	match.Scenes[match.WhoseTurn].Cost = entity.FirstCost
 	match.Scenes[match.WhoseTurn].HandCards = append(match.Scenes[match.WhoseTurn].HandCards, 0)
 
-	s.matchRepo.SetByAccount(scene.PlayerID, match.ID)
-	err = s.matchRepo.Join(&match)
-	if err != nil {
-		log.S().Errorw("JoinMatch: join match fail", "err", err)
-		return nil, err
-	}
-
 	data, err := json.Marshal(&match)
 	if err != nil {
 		log.S().Errorw("JoinMatch: marshal match fail", "err", err)
@@ -322,23 +314,30 @@ func (s *signalingSvc) JoinMatch(ctx context.Context, req *entity.JoinMatchReq) 
 	if e != nil {
 		log.S().Errorw("JoinEvent:Dispatch", "accountid", req.AccountID, "noClient", cli == nil, "err", e)
 	}
-	go func(accountID uint64, data []byte) {
-		_, err := cli.DispatchEventToClient(context.TODO(), accountID, entity.ClientEvent{
-			AccountID: accountID,
-			Type:      entity.MsgTypeSyncMatch,
-			AtTime:    time.Now(),
-			Content:   data,
-		})
-		if err != nil {
-			log.S().Errorw("JoinEvent", "err", err)
-		}
-	}(match.Scenes[0].PlayerID, data)
+	_, err = cli.DispatchEventToClient(context.TODO(), match.Scenes[0].PlayerID, entity.ClientEvent{
+		AccountID: match.Scenes[0].PlayerID,
+		Type:      entity.MsgTypeSyncMatch,
+		AtTime:    time.Now(),
+		Content:   data,
+	})
+	if err != nil {
+		log.S().Errorw("JoinEvent: dispatch event fail", "err", err)
+		return nil, lib.NewError(lib.ErrInternal, "join event fail")
+	}
+
+	s.matchRepo.SetByAccount(scene.PlayerID, match.ID)
+	err = s.matchRepo.Join(&match)
+	if err != nil {
+		log.S().Errorw("JoinMatch: join match fail", "err", err)
+		return nil, err
+	}
 
 	return &entity.JoinMatchRes{
 		Match: match,
 	}, nil
 }
 
+// 最后一个return之前禁止修改数值
 func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate) (*entity.SyncOperateRes, error) {
 	slog := log.L().With(kitx.TraceIDField(ctx)).Sugar()
 	match, err := s.matchRepo.Get(req.MatchID)
@@ -365,12 +364,6 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 			slog.Errorw("SyncOperate: no enough cost", "event", req.Event,
 				"cost", match.Scenes[req.Operator].Cost)
 			return nil, lib.NewError(lib.ErrInvalidArgument, "费用不足")
-		} else {
-			match.Scenes[req.Operator].Cost -= entity.DefaultAttachCost
-		}
-		// 攻击的迷雾位置  暗雾->开雾
-		if match.Scenes[otherPlayer].Squares[req.To] == entity.OriginSquare {
-			match.Scenes[otherPlayer].Squares[req.To] += entity.SquareExposeTime
 		}
 		// 攻击发起者
 		fromUnit := match.Scenes[req.Operator].Units[req.From]
@@ -399,8 +392,8 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 						match.Scenes[otherPlayer].Units[toUnitID].Defend -= attack
 						attack = 0
 					} else {
-						match.Scenes[otherPlayer].Units[toUnitID].Defend = 0
 						attack -= toUnit.Defend
+						match.Scenes[otherPlayer].Units[toUnitID].Defend = 0
 					}
 				}
 				// 生命值结算
@@ -417,6 +410,11 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 				}
 			}
 		}
+		// 攻击的迷雾位置  暗雾->开雾
+		if match.Scenes[otherPlayer].Squares[req.To] == entity.OriginSquare {
+			match.Scenes[otherPlayer].Squares[req.To] += entity.SquareExposeTime
+		}
+		match.Scenes[req.Operator].Cost -= entity.DefaultAttachCost
 	case entity.OpEventMove:
 		// 检查目的地是否合法
 		if req.To > 15 || req.To < 0 || match.Scenes[req.Operator].UnitsLocation[req.To] != 0 {
@@ -433,13 +431,17 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 		}
 		// 检查是否可以移动
 		if fromUnit.BaseAttribute.BaseNoMove || fromUnit.NoMove > 0 ||
-			fromUnit.Move == 0 || fromUnit.IsMoving == -1 ||
-			match.Scenes[req.Operator].Cost == 0 {
+			fromUnit.Move == 0 || fromUnit.IsMoving == -1 {
 			slog.Errorw("SyncOperate: not allowed to move", "event", req.Event,
 				"BaseNoMove", fromUnit.BaseAttribute.BaseNoMove, "NoMove", fromUnit.NoMove,
 				"Move", fromUnit.Move, "IsMoving", fromUnit.IsMoving,
 				"Cost", match.Scenes[req.Operator].Cost)
 			return nil, lib.NewError(lib.ErrInvalidArgument, "禁止移动")
+		}
+		if match.Scenes[req.Operator].Cost == 0 && fromUnit.IsMoving == 0 {
+			slog.Errorw("SyncOperate: no cost to move", "event", req.Event,
+				"Cost", match.Scenes[req.Operator].Cost)
+			return nil, lib.NewError(lib.ErrInvalidArgument, "费用不足")
 		}
 		// 移动发起者的位置
 		var fromUnitLocation int64 = 0
@@ -474,8 +476,10 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 		match.Scenes[req.Operator].UnitsLocation[fromUnitLocation] = 0
 		match.Scenes[req.Operator].UnitsLocation[req.To] = fromUnit.ID
 		match.Scenes[req.Operator].Units[req.From].Move -= 1
+		if match.Scenes[req.Operator].Units[req.From].IsMoving == 0 {
+			match.Scenes[req.Operator].Cost -= 1
+		}
 		match.Scenes[req.Operator].Units[req.From].IsMoving = 1
-		match.Scenes[req.Operator].Cost -= 1
 		match.Scenes[req.Operator].LastMoveUnitID = fromUnit.ID
 	case entity.OpEventCard:
 		length := len(match.Scenes[req.Operator].HandCards)
@@ -519,6 +523,7 @@ func (s *signalingSvc) SyncOperate(ctx context.Context, req *entity.SyncOperate)
 			match.Winner = match.Scenes[1-i].PlayerID
 		}
 	}
+	s.matchRepo.Set(&match)
 
 	data, err := json.Marshal(&match)
 	if err != nil {

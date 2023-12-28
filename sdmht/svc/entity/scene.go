@@ -53,6 +53,7 @@ func NewScene(playerID uint64, units []*Unit,
 	cardLibraries := utils.SliceRandom(cardLibrarys).([]int64)
 	scene := &Scene{
 		PlayerID:          playerID,
+		Units:             make(map[int64]*Unit),
 		Squares:           make([]int32, MaxSquares),
 		UnitsLocation:     unitsLocation,
 		HandCards:         cardLibraries[:HandCardStartNum],
@@ -64,6 +65,9 @@ func NewScene(playerID uint64, units []*Unit,
 		Cost:              MaxCostNum,
 	}
 	for _, unit := range units {
+		unit.Attack = unit.BaseAttack
+		unit.Health = unit.MaxHealth
+		unit.Move = unit.MaxMove
 		scene.Units[unit.ID] = unit
 		if unit.Rarity == RarityMainDeity {
 			scene.MasterID = unit.ID

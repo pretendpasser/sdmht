@@ -26,7 +26,7 @@ type SignalingClient interface {
 	NewMatch(ctx context.Context, in *NewMatchReq, opts ...grpc.CallOption) (*NewMatchReply, error)
 	GetMatch(ctx context.Context, in *GetMatchReq, opts ...grpc.CallOption) (*GetMatchReply, error)
 	JoinMatch(ctx context.Context, in *JoinMatchReq, opts ...grpc.CallOption) (*JoinMatchReply, error)
-	SyncOperator(ctx context.Context, in *SyncOperateReq, opts ...grpc.CallOption) (*CommonReply, error)
+	SyncOperate(ctx context.Context, in *SyncOperateReq, opts ...grpc.CallOption) (*SyncOperateReply, error)
 	KeepAlive(ctx context.Context, in *KeepAliveReq, opts ...grpc.CallOption) (*CommonReply, error)
 	Offline(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*CommonReply, error)
 }
@@ -111,9 +111,9 @@ func (c *signalingClient) JoinMatch(ctx context.Context, in *JoinMatchReq, opts 
 	return out, nil
 }
 
-func (c *signalingClient) SyncOperator(ctx context.Context, in *SyncOperateReq, opts ...grpc.CallOption) (*CommonReply, error) {
-	out := new(CommonReply)
-	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/SyncOperator", in, out, opts...)
+func (c *signalingClient) SyncOperate(ctx context.Context, in *SyncOperateReq, opts ...grpc.CallOption) (*SyncOperateReply, error) {
+	out := new(SyncOperateReply)
+	err := c.cc.Invoke(ctx, "/signaling_pb.Signaling/SyncOperate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ type SignalingServer interface {
 	NewMatch(context.Context, *NewMatchReq) (*NewMatchReply, error)
 	GetMatch(context.Context, *GetMatchReq) (*GetMatchReply, error)
 	JoinMatch(context.Context, *JoinMatchReq) (*JoinMatchReply, error)
-	SyncOperator(context.Context, *SyncOperateReq) (*CommonReply, error)
+	SyncOperate(context.Context, *SyncOperateReq) (*SyncOperateReply, error)
 	KeepAlive(context.Context, *KeepAliveReq) (*CommonReply, error)
 	Offline(context.Context, *LogoutReq) (*CommonReply, error)
 	mustEmbedUnimplementedSignalingServer()
@@ -184,8 +184,8 @@ func (UnimplementedSignalingServer) GetMatch(context.Context, *GetMatchReq) (*Ge
 func (UnimplementedSignalingServer) JoinMatch(context.Context, *JoinMatchReq) (*JoinMatchReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JoinMatch not implemented")
 }
-func (UnimplementedSignalingServer) SyncOperator(context.Context, *SyncOperateReq) (*CommonReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SyncOperator not implemented")
+func (UnimplementedSignalingServer) SyncOperate(context.Context, *SyncOperateReq) (*SyncOperateReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SyncOperate not implemented")
 }
 func (UnimplementedSignalingServer) KeepAlive(context.Context, *KeepAliveReq) (*CommonReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method KeepAlive not implemented")
@@ -350,20 +350,20 @@ func _Signaling_JoinMatch_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Signaling_SyncOperator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Signaling_SyncOperate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SyncOperateReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SignalingServer).SyncOperator(ctx, in)
+		return srv.(SignalingServer).SyncOperate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/signaling_pb.Signaling/SyncOperator",
+		FullMethod: "/signaling_pb.Signaling/SyncOperate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SignalingServer).SyncOperator(ctx, req.(*SyncOperateReq))
+		return srv.(SignalingServer).SyncOperate(ctx, req.(*SyncOperateReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -444,8 +444,8 @@ var Signaling_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Signaling_JoinMatch_Handler,
 		},
 		{
-			MethodName: "SyncOperator",
-			Handler:    _Signaling_SyncOperator_Handler,
+			MethodName: "SyncOperate",
+			Handler:    _Signaling_SyncOperate_Handler,
 		},
 		{
 			MethodName: "KeepAlive",

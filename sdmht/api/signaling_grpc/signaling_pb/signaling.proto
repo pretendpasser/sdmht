@@ -15,7 +15,7 @@ service Signaling {
     rpc NewMatch(NewMatchReq) returns (NewMatchReply);
     rpc GetMatch(GetMatchReq) returns (GetMatchReply);
     rpc JoinMatch(JoinMatchReq) returns (JoinMatchReply);
-    rpc SyncOperator(SyncOperateReq) returns (CommonReply);
+    rpc SyncOperate(SyncOperateReq) returns (SyncOperateReply);
     rpc KeepAlive(KeepAliveReq) returns (CommonReply);
     rpc Offline(LogoutReq) returns (CommonReply);
 }
@@ -84,8 +84,8 @@ message Unit {
     int32 defend = 4;
     int32 attack = 5;
     int32 move = 6;
-    bool attack_prevent = 7;
-    // bool rebirth = 8;
+    int32 is_moving = 7;
+    bool attack_prevent = 8;
     int32 hurt_instead = 9;
     int32 no_move = 10;
     int32 no_attack = 11;
@@ -165,7 +165,18 @@ message JoinMatchReply {
     match match = 2;
 }
 
-message SyncOperateReq{}
+message SyncOperateReq{
+    uint64 match_id = 1;
+    int32 operator = 2;
+    string event = 3;
+    int64 from = 4;
+    int64 to = 5;
+}
+
+message SyncOperateReply{
+    lib.Error err = 1;
+    match match = 2;
+}
 
 message KeepAliveReq {
     uint64 operator = 1;

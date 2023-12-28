@@ -118,15 +118,30 @@ func deJoinMatchReply(_ context.Context, response interface{}) (interface{}, err
 	if r.GetErr() != nil {
 		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
 	}
-	match := grpc.FromPBMatch(r.Match)
 	return &entity.JoinMatchRes{
-		Match: *match,
+		Match: *grpc.FromPBMatch(r.Match),
 	}, nil
 }
 
 func enSyncOperateReq(_ context.Context, request interface{}) (interface{}, error) {
-	_ = request.(*entity.SyncOperate)
-	return &pb.SyncOperateReq{}, nil
+	req := request.(*entity.SyncOperate)
+	return &pb.SyncOperateReq{
+		MatchId:  req.MatchID,
+		Operator: req.Operator,
+		Event:    req.Event,
+		From:     req.From,
+		To:       req.To,
+	}, nil
+}
+
+func deSyncOperateReply(_ context.Context, response interface{}) (interface{}, error) {
+	r := response.(*pb.SyncOperateReply)
+	if r.GetErr() != nil {
+		return nil, lib.NewError(int(r.Err.Errno), r.Err.Errmsg)
+	}
+	return &entity.SyncOperateRes{
+		Match: *grpc.FromPBMatch(r.Match),
+	}, nil
 }
 
 func enKeepAliveReq(_ context.Context, request interface{}) (interface{}, error) {

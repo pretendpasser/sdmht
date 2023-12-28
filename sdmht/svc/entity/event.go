@@ -5,7 +5,7 @@ const (
 	OpEventMove     string = "move"         // from(unitid)    to(position)
 	OpEventCard     string = "card"         // from(cardid)    to(unitid)
 	OpEventSkill    string = "active_skill" // from(skillname) to(empty)
-	OpEventEndRound string = "end_round"    // from(playerid)  to(empty)
+	OpEventEndRound string = "end"          // from(playerid)  to(empty)
 
 	EventHurt string = "hurt" // from(unitid)    to(hurt num)
 	// EventOpenSquare string = "open_square"

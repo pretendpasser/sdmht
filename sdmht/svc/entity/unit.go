@@ -29,10 +29,10 @@ type Unit struct {
 
 	// Weapon        int64  `json:"weapon"`         // 弹幕
 	// Trap          int64  `json:"trap"`           // 秘术
-	Health        int32 `json:"health"`         // 生命值
-	Defend        int32 `json:"defend"`         // 护盾
-	Attack        int32 `json:"attack"`         // 攻击力
-	Move          int32 `json:"move"`           // 移动力
+	Health        int32 `json:"health" db:"-"`  // 生命值
+	Defend        int32 `json:"defend" db:"-"`  // 护盾
+	Attack        int32 `json:"attack" db:"-"`  // 攻击力
+	Move          int32 `json:"move" db:"-"`    // 移动力
 	IsMoving      int32 `json:"is_moving"`      // 移动中 [0:未移动 1:移动中 -1:移动结束]
 	AttackPrevent bool  `json:"attack_prevent"` // 攻击防止(圣盾)
 	// CounterAttack bool   `json:"counter_attack"` // 反击
@@ -192,7 +192,7 @@ func CheckMoveing(from, to int64) error {
 			return nil
 		}
 	} else if to == from-order {
-		if from%order == 0 {
+		if from/order == 0 {
 			return lib.NewError(lib.ErrInvalidArgument, "invalid moving up")
 		} else {
 			return nil

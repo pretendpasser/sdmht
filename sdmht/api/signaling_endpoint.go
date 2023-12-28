@@ -74,6 +74,14 @@ func MakeJoinMatchEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	}
 }
 
+func MakeSyncOperateEndpoint(s itfs.SignalingService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(*entity.SyncOperate)
+		res, err := s.SyncOperate(ctx, req)
+		return kitx.Response{Value: res, Error: err}, nil
+	}
+}
+
 func MakeKeepAliveEndpoint(s itfs.SignalingService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*entity.KeepAliveReq)

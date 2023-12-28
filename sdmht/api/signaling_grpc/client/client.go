@@ -213,8 +213,8 @@ func NewClient(instancer sd.Instancer, opts *kitx.ClientOptions) itfs.SignalingS
 			serviceName,
 			"SyncOperate",
 			enSyncOperateReq,
-			deCommonReply,
-			pb.CommonReply{},
+			deSyncOperateReply,
+			pb.SyncOperateReply{},
 			options...,
 		).Endpoint(), "sdmht.signaling.rpc.SyncOperate"
 	}, opts)
