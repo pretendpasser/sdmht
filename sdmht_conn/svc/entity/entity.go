@@ -1,100 +1,36 @@
 package entity
 
-import (
-	"time"
-
-	sdmht_entity "sdmht/sdmht/svc/entity"
-)
-
 const (
-	PayloadTypeReq = "req"
-	PayloadTypeRsp = "rsp"
-
-	//ClientQuitReasonOffline          = 0 // 客户端退出原因 掉线退出
-	//ClientQuitReasonLoginTimeout     = 1 // 登录超时
-	//ClientQuitReasonKick             = 2 // 被T掉
-	//ClientQuitReasonHeartBeatTimeout = 3 // 心跳超时
-
-	ClientQuitReasonOffline          = "ClientQuitReasonOffline"          // 客户端退出原因 掉线退出
-	ClientQuitReasonLoginTimeout     = "ClientQuitReasonLoginTimeout"     // 登录超时
-	ClientQuitReasonKick             = "ClientQuitReasonKick"             // 被T掉
-	ClientQuitReasonHeartBeatTimeout = "ClientQuitReasonHeartBeatTimeout" // 心跳超时
-	ClientQuitReasonUnauthorized     = "ClientQuitReasonUnauthorized"     // token验证失败
-
-	ClientQuitReasonOfflineMsg = "client close conn"
-
-	ErrCodeMsgSuccess          = 200
-	ErrCodeMsgBadRequest       = 400
-	ErrCodeMsgUnauthorized     = 401
-	ErrCodeMsgForbidden        = 403
-	ErrCodeMsgMethodNotAllowed = 405
-	ErrCodeMsgGone             = 410
-	ErrCodeMsgInternal         = 500
-	ErrCodeMsgNotImplemented   = 501
-	ErrCodeMsgNotFount         = 701
-
-	ErrClientResTimeout    = "client res time out"
-	ErrConnClientNotOnline = "client not on line"
-
-	ClientDoReqWaitRespTimeout = 5 // 向客户端发起请求并等待响应超时时间 秒
-	//GrpcWaitClientRespTimeout  = ClientDoReqWaitRespTimeout + 2 // grpc服务 要在客户端响应基础+n秒
-
-	MaxSN = 65535
+	LinupSplitChar string = ";"
 )
 
-// ErrCodeMsgs {errCode: errMsg}
-var ErrCodeMsgs = map[int]string{
-	ErrCodeMsgSuccess:          "ErrCodeMsgSuccess",
-	ErrCodeMsgBadRequest:       "ErrCodeMsgBadRequest",
-	ErrCodeMsgUnauthorized:     "ErrCodeMsgUnauthorized",
-	ErrCodeMsgForbidden:        "ErrCodeMsgForbidden",
-	ErrCodeMsgMethodNotAllowed: "ErrCodeMsgMethodNotAllowed",
-	ErrCodeMsgGone:             "ErrCodeMsgGone",
-	ErrCodeMsgInternal:         "ErrCodeMsgInternal",
-	ErrCodeMsgNotImplemented:   "ErrCodeMsgNotImplemented",
-	ErrCodeMsgNotFount:         "ErrCodeMsgNotFount",
+type Match struct {
+	ID        uint64   `json:"id"`
+	SN        int64    `json:"sn"`
+	Winner    uint64   `json:"winner"`
+	WhoseTurn int32    `json:"whose_turn"` // player index: [0 1]
+	CurRound  uint64   `json:"cur_round"`
+	Scenes    []*Scene `json:"scenes"`
 }
 
-var MsgTypes = sdmht_entity.MsgTypes
-
-type Payload struct {
-	Version     string `json:"ver"`
-	SN          int    `json:"cseq"`
-	PayloadType string `json:"type"` // "req" or "rsp"
-	MsgType     string `json:"msg"`  // "login" or other
-	Result
-	MsgContent interface{} `json:"body"` // req时 反射解出来 是个实际对应结构的对象指针
-}
-
-type Result struct {
-	Code   int    `json:"code"`
-	Reason string `json:"code_desc"`
-}
-
-type LogoutEvent struct {
-	PocTermName string
-	Time        time.Time
-}
-
-func NewResult(code int, reason string) Result {
-	return Result{Code: code, Reason: reason}
-}
-
-func NewRespPayload(req Payload, code int, reason string, resp interface{}) Payload {
-	return Payload{
-		SN:          req.SN,
-		PayloadType: PayloadTypeRsp,
-		MsgType:     req.MsgType,
-		Result:      NewResult(code, reason),
-		MsgContent:  resp,
+func (m *Match) GetOtherPlayer() int32 {
+	if m.WhoseTurn == 0 {
+		return 1
 	}
+	return 0
 }
 
-func NewReqPayload(sn int, msgType string, content interface{}) Payload {
-	return Payload{
-		SN:          sn,
-		PayloadType: PayloadTypeReq,
-		MsgType:     msgType,
-		MsgContent:  content,
-	}
+type Lineup struct {
+	ID              uint64  `json:"id" db:"id"`
+	AccountID       uint64  `json:"account_id" db:"account_id"`
+	Name            string  `json:"name" db:"name"`
+	Enabled         bool    `json:"enabled" db:"enabled"`
+	Units           []int64 `json:"units" db:"-"`
+	CardLibrarys    []int64 `json:"card_librarys" db:"-"`
+	UnitsStr        string  `json:"-" db:"units"`
+	CardLibrarysStr string  `json:"-" db:"card_library"`
+}
+
+type LineupQuery struct {
+	FilterByAccountID uint64
 }

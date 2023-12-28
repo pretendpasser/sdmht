@@ -13,7 +13,7 @@ import (
 	"time"
 
 	account_entity "sdmht/account/svc/entity"
-	sdmht_entity "sdmht/sdmht/svc/entity"
+	"sdmht/lib"
 	"sdmht/sdmht_conn/svc/entity"
 
 	"github.com/gorilla/websocket"
@@ -36,8 +36,8 @@ var cmdList = map[string]HandlerFunc{
 
 var (
 	g_account  = &account_entity.Account{}
-	g_lineup   = []*sdmht_entity.Lineup{}
-	g_match    = &sdmht_entity.Match{}
+	g_lineup   = []*entity.Lineup{}
+	g_match    = &entity.Match{}
 	g_playerID = 0
 )
 
@@ -120,13 +120,13 @@ func (c *Client) HandleReadMsg() {
 		if err != nil {
 			fmt.Println("MsgToPayload err", err)
 			payload.PayloadType = entity.PayloadTypeRsp
-			payload.Result = entity.NewResult(entity.ErrCodeMsgBadRequest, entity.ErrCodeMsgs[entity.ErrCodeMsgBadRequest])
+			payload.Result = entity.NewResult(lib.ErrInvalidArgument, lib.ErrorStrings[lib.ErrInvalidArgument])
 			c.sendPayloadChan <- payload
 			continue
 		}
 		fmt.Println("Mention Info:", payload.Result)
 		if payload.PayloadType == entity.PayloadTypeRsp {
-			if _, ok := payload.MsgContent.(*sdmht_entity.CommonRes); !ok {
+			if _, ok := payload.MsgContent.(*entity.CommonRes); !ok {
 				c.recvPayloadChan <- payload
 			}
 		} else {
@@ -134,7 +134,7 @@ func (c *Client) HandleReadMsg() {
 			if err != nil {
 				fmt.Println("MsgToPayload err", err)
 				payload.PayloadType = entity.PayloadTypeRsp
-				payload.Result = entity.NewResult(entity.ErrCodeMsgBadRequest, entity.ErrCodeMsgs[entity.ErrCodeMsgBadRequest])
+				payload.Result = entity.NewResult(lib.ErrInvalidArgument, lib.ErrorStrings[lib.ErrInvalidArgument])
 				c.sendPayloadChan <- payload
 				continue
 			}
@@ -146,12 +146,12 @@ func (c *Client) HandleReadMsg() {
 func (c *Client) HandlerReadReqMsg() {
 	for {
 		payload := <-c.serverReqPayloadChan
-		if payload.MsgType == sdmht_entity.MsgTypeSyncMatch {
-			res := payload.MsgContent.(*sdmht_entity.Match)
+		if payload.MsgType == entity.MsgTypeSyncMatch {
+			res := payload.MsgContent.(*entity.Match)
 			g_match = res
 			ShowScene(g_match)
 		}
-		respPayload := entity.NewRespPayload(payload, entity.ErrCodeMsgSuccess, "", &sdmht_entity.CommonRes{})
+		respPayload := entity.NewRespPayload(payload, lib.ErrSuccess, "", &entity.CommonRes{})
 		c.sendPayloadChan <- respPayload
 	}
 }
@@ -234,11 +234,11 @@ func testClient() {
 				if username == "" {
 					username = "default"
 				}
-				cmdList[cmd](c, &sdmht_entity.LoginReq{
+				cmdList[cmd](c, &entity.LoginReq{
 					WeChatID: wechatID,
 					UserName: username,
 				})
-				cmdList["findLineup"](c, &sdmht_entity.FindLineupReq{
+				cmdList["findLineup"](c, &entity.FindLineupReq{
 					AccountID: g_account.ID,
 				})
 			case "newLineup":
@@ -260,8 +260,8 @@ func testClient() {
 					unit, _ := strconv.ParseInt(unitStr, 10, 64)
 					units = append(units, unit)
 				}
-				cmdList[cmd](c, &sdmht_entity.NewLineupReq{
-					Lineup: sdmht_entity.Lineup{
+				cmdList[cmd](c, &entity.NewLineupReq{
+					Lineup: entity.Lineup{
 						AccountID:    g_account.ID,
 						Name:         lineupName,
 						CardLibrarys: cardLibrarys,
@@ -269,7 +269,7 @@ func testClient() {
 					},
 				})
 			case "findLineup":
-				cmdList[cmd](c, &sdmht_entity.FindLineupReq{
+				cmdList[cmd](c, &entity.FindLineupReq{
 					AccountID: g_account.ID,
 				})
 			case "updateLineup":
@@ -285,8 +285,8 @@ func testClient() {
 					unit, _ := strconv.ParseInt(unitStr, 10, 64)
 					units = append(units, unit)
 				}
-				cmdList[cmd](c, &sdmht_entity.UpdateLineupReq{
-					Lineup: sdmht_entity.Lineup{
+				cmdList[cmd](c, &entity.UpdateLineupReq{
+					Lineup: entity.Lineup{
 						ID:           lineupID,
 						AccountID:    g_account.ID,
 						Name:         lineupName,
@@ -298,7 +298,7 @@ func testClient() {
 				var lineupID uint64 = 0
 				fmt.Printf("Input deleteLineup param [lineupID]> ")
 				fmt.Scanln(&lineupID)
-				cmdList[cmd](c, &sdmht_entity.DeleteLineupReq{
+				cmdList[cmd](c, &entity.DeleteLineupReq{
 					ID:        lineupID,
 					AccountID: g_account.ID,
 				})
@@ -308,7 +308,7 @@ func testClient() {
 				fmt.Printf("Input newMatch param [lineupID]> ")
 				fmt.Scanln(&lineupID)
 
-				var chooseLineup *sdmht_entity.Lineup
+				var chooseLineup *entity.Lineup
 				for _, lineup := range g_lineup {
 					if lineup.ID == lineupID && lineup.Enabled {
 						chooseLineup = lineup
@@ -324,14 +324,14 @@ func testClient() {
 					position[p] = chooseLineup.Units[i]
 				}
 
-				cmdList[cmd](c, &sdmht_entity.NewMatchReq{
+				cmdList[cmd](c, &entity.NewMatchReq{
 					AccountID: g_account.ID,
 					LineupID:  lineupID,
 					Positions: position,
 				})
 			case "getMatch", "gm":
 				cmd = "getMatch"
-				cmdList[cmd](c, &sdmht_entity.GetMatchReq{
+				cmdList[cmd](c, &entity.GetMatchReq{
 					AccountID: g_account.ID,
 				})
 			case "joinMatch", "jm":
@@ -339,7 +339,7 @@ func testClient() {
 				lineupID, matchID := uint64(0), uint64(0)
 				fmt.Printf("Input newMatch param [lineupID, matchID]> ")
 				fmt.Scanln(&lineupID, &matchID)
-				var chooseLineup *sdmht_entity.Lineup
+				var chooseLineup *entity.Lineup
 				for _, lineup := range g_lineup {
 					if lineup.ID == lineupID && lineup.Enabled {
 						chooseLineup = lineup
@@ -355,7 +355,7 @@ func testClient() {
 					position[p] = chooseLineup.Units[i]
 				}
 
-				cmdList[cmd](c, &sdmht_entity.JoinMatchReq{
+				cmdList[cmd](c, &entity.JoinMatchReq{
 					AccountID: g_account.ID,
 					MatchID:   matchID,
 					Positions: position,
@@ -370,7 +370,7 @@ func testClient() {
 				event, from, to := "", int64(0), int64(0)
 				fmt.Printf("Event mention: [attack|move|end]\nInput operate param [event, from, to]> ")
 				fmt.Scanln(&event, &from, &to)
-				cmdList[cmd](c, &sdmht_entity.SyncOperate{
+				cmdList[cmd](c, &entity.SyncOperateReq{
 					MatchID:  g_match.ID,
 					Operator: int32(g_playerID),
 					Event:    event,
@@ -404,29 +404,29 @@ func testClient() {
 }
 
 func MakeLoginReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.LoginReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeLogin, r)
+	r := req.(*entity.LoginReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeLogin, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res := recvPayload.MsgContent.(*sdmht_entity.LoginRes)
+	res := recvPayload.MsgContent.(*entity.LoginRes)
 	g_account.ID = res.AccountID
 }
 
 func MakeNewLineupReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.NewLineupReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewLineup, r)
+	r := req.(*entity.NewLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeNewLineup, r)
 	c.sendPayloadChan <- payload
-	MakeFindLineupReq(c, &sdmht_entity.FindLineupReq{
+	MakeFindLineupReq(c, &entity.FindLineupReq{
 		AccountID: g_account.ID,
 	})
 }
 
 func MakeFindLineupReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.FindLineupReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeFindLineup, r)
+	r := req.(*entity.FindLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeFindLineup, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res, ok := recvPayload.MsgContent.(*sdmht_entity.FindLineupRes)
+	res, ok := recvPayload.MsgContent.(*entity.FindLineupRes)
 	if !ok {
 		return
 	}
@@ -438,26 +438,26 @@ func MakeFindLineupReq(c *Client, req interface{}) {
 }
 
 func MakeUpdateLineupReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.UpdateLineupReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeUpdateLineup, r)
+	r := req.(*entity.UpdateLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeUpdateLineup, r)
 	c.sendPayloadChan <- payload
-	MakeFindLineupReq(c, &sdmht_entity.FindLineupReq{
+	MakeFindLineupReq(c, &entity.FindLineupReq{
 		AccountID: g_account.ID,
 	})
 }
 
 func MakeDeleteLineupReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.DeleteLineupReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeDeleteLineup, r)
+	r := req.(*entity.DeleteLineupReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeDeleteLineup, r)
 	c.sendPayloadChan <- payload
 }
 
 func MakeNewMatchReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.NewMatchReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeNewMatch, r)
+	r := req.(*entity.NewMatchReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeNewMatch, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res, ok := recvPayload.MsgContent.(*sdmht_entity.NewMatchRes)
+	res, ok := recvPayload.MsgContent.(*entity.NewMatchRes)
 	if !ok {
 		return
 	}
@@ -468,11 +468,11 @@ func MakeNewMatchReq(c *Client, req interface{}) {
 }
 
 func MakeGetMatchReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.GetMatchReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeGetMatch, r)
+	r := req.(*entity.GetMatchReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeGetMatch, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res, ok := recvPayload.MsgContent.(*sdmht_entity.GetMatchRes)
+	res, ok := recvPayload.MsgContent.(*entity.GetMatchRes)
 	if !ok {
 		return
 	}
@@ -482,11 +482,11 @@ func MakeGetMatchReq(c *Client, req interface{}) {
 }
 
 func MakeJoinMatchReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.JoinMatchReq)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeJoinMatch, r)
+	r := req.(*entity.JoinMatchReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeJoinMatch, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res, ok := recvPayload.MsgContent.(*sdmht_entity.JoinMatchRes)
+	res, ok := recvPayload.MsgContent.(*entity.JoinMatchRes)
 	if !ok {
 		return
 	}
@@ -497,11 +497,11 @@ func MakeJoinMatchReq(c *Client, req interface{}) {
 }
 
 func MakeOperateReq(c *Client, req interface{}) {
-	r := req.(*sdmht_entity.SyncOperate)
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeSyncOperator, r)
+	r := req.(*entity.SyncOperateReq)
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeSyncOperator, r)
 	c.sendPayloadChan <- payload
 	recvPayload := <-c.recvPayloadChan
-	res, ok := recvPayload.MsgContent.(*sdmht_entity.SyncOperateRes)
+	res, ok := recvPayload.MsgContent.(*entity.SyncOperateRes)
 	if !ok {
 		return
 	}
@@ -511,11 +511,11 @@ func MakeOperateReq(c *Client, req interface{}) {
 }
 
 func MakeKeepAliveReq(c *Client, _ interface{}) {
-	payload := entity.NewReqPayload(c.NewSN(), sdmht_entity.MsgTypeKeepAlive, &sdmht_entity.KeepAliveReq{})
+	payload := entity.NewReqPayload(c.NewSN(), entity.MsgTypeKeepAlive, &entity.KeepAliveReq{})
 	c.sendPayloadChan <- payload
 }
 
-func ShowScene(m *sdmht_entity.Match) {
+func ShowScene(m *entity.Match) {
 	fmt.Println("-------------", m.WhoseTurn, "-------------")
 	for who, scene := range m.Scenes {
 		fmt.Printf("--- %d ---", who)

@@ -18,9 +18,11 @@ const (
 	ErrInternal          = 10
 	ErrUnauthorized      = 11
 	ErrUnsupported       = 12
+
+	ErrSuccess = 200
 )
 
-var errorStrings = map[int]string{
+var ErrorStrings = map[int]string{
 	ErrInvalidArgument:   "invalid argument",
 	ErrNotFound:          "not found",
 	ErrAlreadyExists:     "aleady exists",
@@ -33,6 +35,7 @@ var errorStrings = map[int]string{
 	ErrInternal:          "internal",
 	ErrUnauthorized:      "unauthorized",
 	ErrUnsupported:       "unsupported",
+	ErrSuccess:           "success",
 }
 
 type Error struct {
@@ -42,7 +45,7 @@ type Error struct {
 
 func NewError(c int, m string) Error {
 	if m == "" {
-		m = errorStrings[c]
+		m = ErrorStrings[c]
 	}
 	return Error{c, m}
 }
